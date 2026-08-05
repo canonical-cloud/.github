@@ -29,7 +29,7 @@
     "contains_non_public_inventory": true,
     "digest": "sha256:10a0940d8458cf2527f5aa11d6df1e36dcde773c95f034dabf169cbd2f00afe7",
     "path": "owners/canonical-cloud.json",
-    "repository": "ORESoftware/project-registry"
+    "repository": "approved-private-registry"
   },
   "relationships": [
     {
