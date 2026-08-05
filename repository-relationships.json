@@ -1,10 +1,287 @@
 {
+  "$schema": "./repository-relationships.schema.json",
+  "audience": "public",
+  "generated": {
+    "complete_for_visibility": "public",
+    "generated_at": "2026-08-05T21:07:32Z",
+    "generator_version": "2026-08-04.1",
+    "inventory_digest": "sha256:8e76d3281c8316233b2daa300e42f3419ffd5665bb1ab275b17beec3c9149e5d",
+    "managed_by": "ore-repository-relationship-rollout",
+    "omitted_repository_count": 2,
+    "private_repositories_omitted": true,
+    "source": "GitHub GraphQL repository inventory plus reviewed manual declarations"
+  },
+  "owner": {
+    "account_type": "organization",
+    "dotgithub_repository": "canonical-cloud/.github",
+    "github_id": "297250874",
+    "linear_project": {
+      "id": "9b3cec23-bc6f-4f8d-a696-2bc8a918e86a",
+      "name": "github.com/canonical-cloud",
+      "team_id": "eb8ab169-5afe-4b6f-9cab-3f2aa3e887dc",
+      "url": "https://linear.app/denman/project/githubcomcanonical-cloud-1659c8ea1adf",
+      "workspace": "denman"
+    },
+    "login": "canonical-cloud",
+    "mapping_id": "context:canonical-cloud"
+  },
+  "private_registry": {
+    "contains_non_public_inventory": true,
+    "digest": "sha256:10a0940d8458cf2527f5aa11d6df1e36dcde773c95f034dabf169cbd2f00afe7",
+    "path": "owners/canonical-cloud.json",
+    "repository": "ORESoftware/project-registry"
+  },
+  "relationships": [
+    {
+      "confidence": 1.0,
+      "evidence": [
+        {
+          "kind": "github-owner-membership",
+          "source": "GitHub GraphQL repository inventory"
+        }
+      ],
+      "from": "canonical-cloud/.github",
+      "id": "sha256:67b53a5d96c28975206da2c4c336f92ba207af82a2a5665eae28ef36c4b8c576",
+      "notes": "Organization .github policy and community-health defaults govern this sibling repository.",
+      "required": true,
+      "scope": "organization",
+      "status": "declared",
+      "to": "canonical-cloud/canonical-interfaces",
+      "type": "governs"
+    },
+    {
+      "confidence": 1.0,
+      "evidence": [
+        {
+          "kind": "github-owner-membership",
+          "source": "GitHub GraphQL repository inventory"
+        }
+      ],
+      "from": "canonical-cloud/.github",
+      "id": "sha256:b20ff9b0495a60c2fcbda3c82d0ff140e81c45a88b0979360d0393d03223ffb9",
+      "notes": "Organization .github policy and community-health defaults govern this sibling repository.",
+      "required": true,
+      "scope": "organization",
+      "status": "declared",
+      "to": "canonical-cloud/canonical-marketing-site.web",
+      "type": "governs"
+    },
+    {
+      "confidence": 1.0,
+      "evidence": [
+        {
+          "kind": "github-owner-membership",
+          "source": "GitHub GraphQL repository inventory"
+        }
+      ],
+      "from": "canonical-cloud/.github",
+      "id": "sha256:45d4ca4c7212145138d526c06b33aa16aca46fc79fd4fc34b0a169925f538a20",
+      "notes": "Organization .github policy and community-health defaults govern this sibling repository.",
+      "required": true,
+      "scope": "organization",
+      "status": "declared",
+      "to": "canonical-cloud/canonical-mcp-server.rs",
+      "type": "governs"
+    },
+    {
+      "confidence": 1.0,
+      "evidence": [
+        {
+          "kind": "github-owner-membership",
+          "source": "GitHub GraphQL repository inventory"
+        }
+      ],
+      "from": "canonical-cloud/.github",
+      "id": "sha256:4f313ba90ba4632f1cada5364dd8e56da37ad45cb6133c76b8d1b2489ea67bc7",
+      "notes": "Organization .github policy and community-health defaults govern this sibling repository.",
+      "required": true,
+      "scope": "organization",
+      "status": "declared",
+      "to": "canonical-cloud/canonical-monorepo",
+      "type": "governs"
+    },
+    {
+      "confidence": 1.0,
+      "evidence": [
+        {
+          "kind": "github-owner-membership",
+          "source": "GitHub GraphQL repository inventory"
+        }
+      ],
+      "from": "canonical-cloud/.github",
+      "id": "sha256:4ba0dcd11e4d15deec1d229a4cd8858ea7557ae97b8139edf43098dcbf44df06",
+      "notes": "Organization .github policy and community-health defaults govern this sibling repository.",
+      "required": true,
+      "scope": "organization",
+      "status": "declared",
+      "to": "canonical-cloud/canonical-web-server.rs",
+      "type": "governs"
+    },
+    {
+      "confidence": 1.0,
+      "evidence": [
+        {
+          "kind": "github-owner-membership",
+          "source": "GitHub GraphQL repository inventory"
+        }
+      ],
+      "from": "canonical-cloud/.github",
+      "id": "sha256:351ba0b583e938a593262094be84a0f2fe0a82f3ead83fc10cdce97b98211304",
+      "notes": "Organization .github policy and community-health defaults govern this sibling repository.",
+      "required": true,
+      "scope": "organization",
+      "status": "declared",
+      "to": "canonical-cloud/canonical.cloud",
+      "type": "governs"
+    },
+    {
+      "confidence": 0.82,
+      "evidence": [
+        {
+          "family": "canonical",
+          "kind": "paired-repository-naming",
+          "source_role": "mcp-server",
+          "target_role": "interfaces"
+        }
+      ],
+      "from": "canonical-cloud/canonical-mcp-server.rs",
+      "id": "sha256:310db517259df860a909d25df211c728d4d5b4c67538794dd81eaf993751484e",
+      "notes": "Conservative naming inference; confirm or override in the manual declaration file.",
+      "required": false,
+      "scope": "organization",
+      "status": "inferred",
+      "to": "canonical-cloud/canonical-interfaces",
+      "type": "depends_on"
+    },
+    {
+      "confidence": 0.82,
+      "evidence": [
+        {
+          "family": "canonical",
+          "kind": "paired-repository-naming",
+          "source_role": "web-server",
+          "target_role": "interfaces"
+        }
+      ],
+      "from": "canonical-cloud/canonical-web-server.rs",
+      "id": "sha256:ee80004370aed6ede0dd5a988d37fe108aa368795a7f5d02a55504fa5075fa9b",
+      "notes": "Conservative naming inference; confirm or override in the manual declaration file.",
+      "required": false,
+      "scope": "organization",
+      "status": "inferred",
+      "to": "canonical-cloud/canonical-interfaces",
+      "type": "depends_on"
+    }
+  ],
+  "repositories": [
+    {
+      "archived": false,
+      "default_branch": "main",
+      "fork": false,
+      "full_name": "canonical-cloud/.github",
+      "github_id": "1324047184",
+      "name": ".github",
+      "owner": "canonical-cloud",
+      "roles": [
+        "community-health",
+        "governance",
+        "relationship-registry"
+      ],
+      "source": "github-graphql-api",
+      "url": "https://github.com/canonical-cloud/.github",
+      "visibility": "public"
+    },
+    {
+      "archived": false,
+      "default_branch": "main",
+      "fork": false,
+      "full_name": "canonical-cloud/canonical-interfaces",
+      "github_id": "1294609171",
+      "name": "canonical-interfaces",
+      "owner": "canonical-cloud",
+      "roles": [
+        "interfaces"
+      ],
+      "source": "github-graphql-api",
+      "url": "https://github.com/canonical-cloud/canonical-interfaces",
+      "visibility": "public"
+    },
+    {
+      "archived": false,
+      "default_branch": "main",
+      "fork": false,
+      "full_name": "canonical-cloud/canonical-marketing-site.web",
+      "github_id": "1294567541",
+      "name": "canonical-marketing-site.web",
+      "owner": "canonical-cloud",
+      "roles": [
+        "repository"
+      ],
+      "source": "github-graphql-api",
+      "url": "https://github.com/canonical-cloud/canonical-marketing-site.web",
+      "visibility": "public"
+    },
+    {
+      "archived": false,
+      "default_branch": "main",
+      "fork": false,
+      "full_name": "canonical-cloud/canonical-mcp-server.rs",
+      "github_id": "1299660331",
+      "name": "canonical-mcp-server.rs",
+      "owner": "canonical-cloud",
+      "roles": [
+        "mcp-server"
+      ],
+      "source": "github-graphql-api",
+      "url": "https://github.com/canonical-cloud/canonical-mcp-server.rs",
+      "visibility": "public"
+    },
+    {
+      "archived": false,
+      "default_branch": "main",
+      "fork": false,
+      "full_name": "canonical-cloud/canonical-monorepo",
+      "github_id": "1294570747",
+      "name": "canonical-monorepo",
+      "owner": "canonical-cloud",
+      "roles": [
+        "monorepo"
+      ],
+      "source": "github-graphql-api",
+      "url": "https://github.com/canonical-cloud/canonical-monorepo",
+      "visibility": "public"
+    },
+    {
+      "archived": false,
+      "default_branch": "main",
+      "fork": false,
+      "full_name": "canonical-cloud/canonical-web-server.rs",
+      "github_id": "1294567304",
+      "name": "canonical-web-server.rs",
+      "owner": "canonical-cloud",
+      "roles": [
+        "web-server"
+      ],
+      "source": "github-graphql-api",
+      "url": "https://github.com/canonical-cloud/canonical-web-server.rs",
+      "visibility": "public"
+    },
+    {
+      "archived": false,
+      "default_branch": "main",
+      "fork": false,
+      "full_name": "canonical-cloud/canonical.cloud",
+      "github_id": "1281683812",
+      "name": "canonical.cloud",
+      "owner": "canonical-cloud",
+      "roles": [
+        "repository"
+      ],
+      "source": "github-graphql-api",
+      "url": "https://github.com/canonical-cloud/canonical.cloud",
+      "visibility": "public"
+    }
+  ],
   "schema_version": 1,
-  "organization": "canonical-cloud",
-  "generated_at": null,
-  "repositories": [],
-  "notes": [
-    "Populate from live GitHub inventory; do not infer unverified dependencies.",
-    "Repository-local manifests remain authoritative for exact dependency versions."
-  ]
+  "unresolved_hints": []
 }
