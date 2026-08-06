@@ -22,6 +22,10 @@ Organization-wide contribution and security guidance lives in this `.github` rep
 GitHub owns code and delivery evidence; Linear owns planning and dependencies. The linked organization Project provides the cross-repository execution view.
 <!-- org-project-routing:end -->
 
+## Active delivery documentation
+
+- [Authenticated compliance quote delivery map — August 5, 2026](../docs/AUTHENTICATED-QUOTE-DELIVERY.md)
+
 <!-- ore-org-baseline:begin -->
 This GitHub account maintains software, infrastructure, research, and supporting documentation under the [`canonical-cloud`](https://github.com/canonical-cloud) GitHub owner.
 
