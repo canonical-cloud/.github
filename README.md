@@ -11,6 +11,7 @@ This public repository is the canonical source for GitHub-supported fallback com
 
 - GitHub owner: [`canonical-cloud`](https://github.com/canonical-cloud)
 - Linear project: [github.com/canonical-cloud](https://linear.app/denman/project/githubcomcanonical-cloud-1659c8ea1adf)
+- Linear and GitHub Project tracking: [`docs/PROJECT_TRACKING.md`](docs/PROJECT_TRACKING.md)
 - Public context: [`ORG_CONTEXT.md`](ORG_CONTEXT.md)
 - Canonical agent policy for this repository: [`agents.md`](agents.md)
 - Governance: [`GOVERNANCE.md`](GOVERNANCE.md)
