@@ -14,3 +14,7 @@ GitHub is authoritative for repositories, commits, pull requests, reviews, CI ch
 
 Documentation branches must be reviewed through pull requests and merged after checks pass. Concurrent edits are reconciled semantically against the latest default branch: this managed routing block is regenerated while all unrelated prose outside the block is preserved. Do not resolve conflicts by blindly choosing one side.
 <!-- org-project-routing:end -->
+
+## Active delivery maps
+
+- [Authenticated compliance quote delivery map — August 5, 2026](AUTHENTICATED-QUOTE-DELIVERY.md)
