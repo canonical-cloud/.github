@@ -7,7 +7,7 @@ base64_stream="$out_dir/canonical-docs-ready.zip.b64"
 archive="$out_dir/canonical-docs-ready.zip"
 extract_dir="$out_dir/extracted"
 
-expected_stream_sha256="2856beb33dc6a522e45397486f102f65ceeb8d8517b9efff36f2048bc7d1d5f5"
+expected_stream_sha256="3d400c0871dcd3d21f4fb588b94be1f8a8b8cd813f142aff293f74de4963f951"
 expected_archive_sha256="6afa4bef55c3b69b22cc1cad0468d156bce7e7413f3af47addbcca4b25c811c4"
 expected_entries=36
 expected_uncompressed_bytes=103011
