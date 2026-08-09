@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "target_repository": "canonical-cloud/canonical-docs",
+  "recovery_kind": "verified-source-archive-without-original-git-object-database",
+  "archive": {
+    "logical_name": "canonical-docs-ready.zip",
+    "bytes": 45145,
+    "sha256": "6afa4bef55c3b69b22cc1cad0468d156bce7e7413f3af47addbcca4b25c811c4",
+    "git_blob_sha1_if_stored_directly": "641500948aa62ccc70c6626f74b9e8c389b16ce2",
+    "zip_entries": 36,
+    "uncompressed_bytes": 103011
+  },
+  "base64_stream": {
+    "bytes": 60196,
+    "sha256": "2856beb33dc6a522e45397486f102f65ceeb8d8517b9efff36f2048bc7d1d5f5"
+  },
+  "parts": [
+    {
+      "order": 0,
+      "name": "canonical-docs-ready.part00.b64",
+      "bytes": 8000,
+      "sha256": "c54ac9fa2e98addfad3ab1bf0626f759a608b4ea5e2bef5f6be811c372196f12",
+      "git_blob_sha1": "3107df60bb35066867745c652887ab2386aae289"
+    },
+    {
+      "order": 1,
+      "name": "canonical-docs-ready.part01.b64",
+      "bytes": 8000,
+      "sha256": "3e4f8a6ea412d7251cf2a365f6726f7f0ffe20506ea2eede88be01462a2fe743",
+      "git_blob_sha1": "da51fa0d7303c67f0ba71fb25005e3630df08d3d"
+    },
+    {
+      "order": 2,
+      "name": "canonical-docs-ready.part02.b64",
+      "bytes": 8000,
+      "sha256": "de4371b0d48fb7aeff48ed7024c362ecac5556f521c596286571c3a09d8234b9",
+      "git_blob_sha1": "8db757a852b1de54c8364c3b3b616a950c66e41c"
+    },
+    {
+      "order": 3,
+      "name": "canonical-docs-ready.part03.b64",
+      "bytes": 8000,
+      "sha256": "cf3ec98b17b46863a3bb33b3a508d6ca04345738b3147a6479f25ed4f00b333a",
+      "git_blob_sha1": "a217ece720689fc76de393ae0304f682a52860c5"
+    },
+    {
+      "order": 4,
+      "name": "canonical-docs-ready.part04.b64",
+      "bytes": 8000,
+      "sha256": "9104b6a182488683323967f5eaab5c48afd977c5ce2c6ac2891f280d5294c4d1",
+      "git_blob_sha1": "5a47e5a62749b47272b9ee3cce04229b16250d58"
+    },
+    {
+      "order": 5,
+      "name": "canonical-docs-ready.part05.b64",
+      "bytes": 8000,
+      "sha256": "9eb2c35fad9496e91be979213fe342493a9f5f56409d44efdc12700b585d7a2d",
+      "git_blob_sha1": "cf8ae7a4fd535f06edb0f28fc6d6702c7bd172e3"
+    },
+    {
+      "order": 6,
+      "name": "canonical-docs-ready.part06.b64",
+      "bytes": 8000,
+      "sha256": "25c99897f0351ae39d06b5828d276826188ef2cc5c92ffec47996cbeb4a0e3b6",
+      "git_blob_sha1": "586cac300d140be439235e088399f9f8a3dbd5ea"
+    },
+    {
+      "order": 7,
+      "name": "canonical-docs-ready.part07.b64",
+      "bytes": 4196,
+      "sha256": "97b3848cf6c2b66b8c9b0307f27e5ad3431ad1a9390810be1cd5a8acd04c3965",
+      "git_blob_sha1": "a8986d02725c5b178ed016e4691700c11300c601"
+    }
+  ],
+  "validation": {
+    "document_contract": "pass",
+    "unit_tests_passed": 11,
+    "unit_tests_total": 11,
+    "credential_shape_scan": "no-hit"
+  },
+  "history_statement": "The original .git object database was not present. Any later commit created from this source is a new reconstructed commit and must not be represented as an original historical head.",
+  "tracking": ["DEN-1049", "DEN-2797", "DEN-319"]
+}
