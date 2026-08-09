@@ -20,7 +20,7 @@ The archive is stored as eight ordered base64 segments because the connected Git
 ## Reconstruct and verify
 
 ```bash
-./reconstruct.sh /tmp/canonical-docs-wave7
+bash ./reconstruct.sh /tmp/canonical-docs-wave7
 ```
 
 The script:
