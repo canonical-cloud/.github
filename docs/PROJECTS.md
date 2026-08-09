@@ -10,6 +10,8 @@
 
 GitHub is authoritative for repositories, commits, pull requests, reviews, CI checks, releases, deployable artifacts, and runtime evidence. Linear is authoritative for product planning, priorities, ownership, dependencies, milestones, and status reporting. The GitHub Project is the organization-level execution board and should contain the governance issue maintained by this repository.
 
+The older in-progress Linear project linked above remains canonical. A newer backlog project with the same display name is a duplicate and must not become a parallel planning authority.
+
 ## Change and merge policy
 
 Documentation branches must be reviewed through pull requests and merged after checks pass. Concurrent edits are reconciled semantically against the latest default branch: this managed routing block is regenerated while all unrelated prose outside the block is preserved. Do not resolve conflicts by blindly choosing one side.
@@ -17,4 +19,5 @@ Documentation branches must be reviewed through pull requests and merged after c
 
 ## Active delivery maps
 
-- [Authenticated compliance quote delivery map — August 5, 2026](AUTHENTICATED-QUOTE-DELIVERY.md)
+- [Canonical Plus authenticated quote execution ledger — August 7, 2026](AUTHENTICATED-QUOTE-EXECUTION-2026-08-07.md)
+- [Authenticated compliance quote delivery baseline — August 5, 2026](AUTHENTICATED-QUOTE-DELIVERY.md)
