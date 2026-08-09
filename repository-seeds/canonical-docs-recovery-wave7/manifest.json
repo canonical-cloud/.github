@@ -11,8 +11,8 @@
     "uncompressed_bytes": 103011
   },
   "base64_stream": {
-    "bytes": 60196,
-    "sha256": "2856beb33dc6a522e45397486f102f65ceeb8d8517b9efff36f2048bc7d1d5f5"
+    "bytes": 60302,
+    "sha256": "3d400c0871dcd3d21f4fb588b94be1f8a8b8cd813f142aff293f74de4963f951"
   },
   "parts": [
     {
@@ -60,9 +60,9 @@
     {
       "order": 6,
       "name": "canonical-docs-ready.part06.b64",
-      "bytes": 8000,
-      "sha256": "25c99897f0351ae39d06b5828d276826188ef2cc5c92ffec47996cbeb4a0e3b6",
-      "git_blob_sha1": "586cac300d140be439235e088399f9f8a3dbd5ea"
+      "bytes": 8106,
+      "sha256": "a89a2250ca028cb4fbbcfc1fe1ee059053fa6f6add6ce06b7bcd34fb2cea3e8f",
+      "git_blob_sha1": "75c56c130caaac509748af393f772744e25e0729"
     },
     {
       "order": 7,
