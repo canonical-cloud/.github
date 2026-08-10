@@ -62,7 +62,14 @@ for path in ROOT.rglob('*'):
     for pattern in SECRET_PATTERNS:
         if pattern.search(text):
             fail(f'possible credential in {path.relative_to(ROOT)}')
-    if text and not text.endswith('\n'):
+    # Recovery shards are immutable, manifest-pinned byte streams. Appending a
+    # formatting newline would invalidate their recorded size, SHA-256, and Git
+    # blob identity even though a base64 decoder would ignore that whitespace.
+    immutable_recovery_shard = (
+        path.suffix == '.b64'
+        and 'repository-seeds' in path.relative_to(ROOT).parts
+    )
+    if text and not text.endswith('\n') and not immutable_recovery_shard:
         fail(f'missing final newline: {path.relative_to(ROOT)}')
 
 workflow_paths = list((ROOT / '.github/workflows').glob('*.y*ml'))
