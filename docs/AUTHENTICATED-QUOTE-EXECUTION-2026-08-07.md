@@ -10,6 +10,7 @@ This ledger reconciles the active Canonical Plus quote work across GitHub, Linea
 - Stable Project routing card: [`.github#2`](https://github.com/canonical-cloud/.github/issues/2)
 - Primary Linear delivery issue: `DEN-2622`
 - Standalone API and durability issues: `DEN-2598` and `DEN-2599`
+- Quote-contract convergence issue: `DEN-2642`
 - Kubernetes activation issue: `DEN-2601`
 - Cloudflare inventory and routing issues: `DEN-2631`, `DEN-2649`, and `DEN-2655`
 - Staged service-token compatibility cleanup: `DEN-2825`
