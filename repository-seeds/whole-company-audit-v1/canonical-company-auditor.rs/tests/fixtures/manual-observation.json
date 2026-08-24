@@ -1,0 +1,18 @@
+{
+  "schema_version": "canonical.evidence-observation-input/v1",
+  "tenant_id": "tenant-a",
+  "scope_id": "organization/acme/policy/security",
+  "evidence_type": "policy.approval",
+  "source": {
+    "kind": "manual",
+    "submitted_by": "identity:alice"
+  },
+  "collector_identity": "manual-portal:v1",
+  "collected_at": 1767225600,
+  "valid_until": 1775001600,
+  "normalized": {
+    "document_id": "policy-7",
+    "status": "approved"
+  },
+  "content_sha256": "4ca2bffed7358abb6e97424a163c1a08ed42b901a198ae822aa7ad5bdc459a58"
+}
