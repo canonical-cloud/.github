@@ -338,20 +338,8 @@ impl EvidenceObservation {
             });
         }
 
-        let observation_id = digest_serializable(&(
-            "canonical.observation/v1",
-            &input.tenant_id,
-            &input.scope_id,
-            &input.evidence_type,
-            &input.source,
-            &input.collector_identity,
-            input.collected_at,
-            input.valid_until,
-            &input.content_sha256,
-        ))?;
-
-        Ok(Self {
-            observation_id,
+        let mut observation = Self {
+            observation_id: String::new(),
             tenant_id: input.tenant_id,
             scope_id: input.scope_id,
             evidence_type: input.evidence_type,
@@ -361,7 +349,9 @@ impl EvidenceObservation {
             valid_until: input.valid_until,
             normalized: input.normalized,
             content_sha256: input.content_sha256,
-        })
+        };
+        observation.observation_id = observation_id_for(&observation)?;
+        Ok(observation)
     }
 
     /// Recomputes the normalized content digest.
@@ -380,6 +370,38 @@ impl EvidenceObservation {
         }
         Ok(())
     }
+
+    /// Recomputes both the normalized content digest and the provenance-bound observation ID.
+    ///
+    /// # Errors
+    ///
+    /// Returns an [`AuditError`] when normalized content or any identity/provenance field no longer
+    /// matches the deterministic observation ID.
+    pub fn verify_identity(&self) -> Result<(), AuditError> {
+        self.verify_content_digest()?;
+        let actual = observation_id_for(self)?;
+        if actual != self.observation_id {
+            return Err(AuditError::ObservationIdentityMismatch {
+                expected: self.observation_id.clone(),
+                actual,
+            });
+        }
+        Ok(())
+    }
+}
+
+fn observation_id_for(observation: &EvidenceObservation) -> Result<String, AuditError> {
+    digest_serializable(&(
+        "canonical.observation/v1",
+        &observation.tenant_id,
+        &observation.scope_id,
+        &observation.evidence_type,
+        &observation.source,
+        &observation.collector_identity,
+        observation.collected_at,
+        observation.valid_until,
+        &observation.content_sha256,
+    ))
 }
 
 fn validate_identifier(field: &'static str, value: String) -> Result<String, AuditError> {

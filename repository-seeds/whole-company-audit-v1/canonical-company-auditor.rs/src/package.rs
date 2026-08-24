@@ -74,7 +74,7 @@ impl AuditPackage {
                     observation_id: observation.observation_id.clone(),
                 });
             }
-            observation.verify_content_digest()?;
+            observation.verify_identity()?;
         }
 
         observations.sort_by(|left, right| left.observation_id.cmp(&right.observation_id));

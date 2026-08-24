@@ -45,6 +45,14 @@ pub enum AuditError {
         /// Recomputed digest.
         actual: String,
     },
+    /// A provenance or identity field no longer matched the deterministic observation ID.
+    #[error("observation identity mismatch: expected {expected}, got {actual}")]
+    ObservationIdentityMismatch {
+        /// Serialized observation ID.
+        expected: String,
+        /// Recomputed observation ID.
+        actual: String,
+    },
     /// Normalized evidence exceeded the bounded exchange limit.
     #[error("normalized evidence is {actual} bytes; maximum is {maximum}")]
     EvidenceTooLarge {
