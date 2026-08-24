@@ -1,0 +1,46 @@
+{
+  "pages": [
+    {
+      "page": 1,
+      "records": [
+        {
+          "name": "web",
+          "default_branch": "main",
+          "visibility": "private",
+          "branch_protection_required": true,
+          "actions_enabled": true,
+          "team_count": 3,
+          "audit_log_reference": "event:repo.web.snapshot",
+          "upstream_noise": "must-not-escape"
+        },
+        {
+          "name": "api",
+          "default_branch": "main",
+          "visibility": "private",
+          "branch_protection_required": true,
+          "actions_enabled": true,
+          "team_count": 2,
+          "audit_log_reference": "event:repo.api.snapshot",
+          "upstream_noise": "must-not-escape"
+        }
+      ],
+      "next_page": 2
+    },
+    {
+      "page": 2,
+      "records": [
+        {
+          "name": "docs",
+          "default_branch": "main",
+          "visibility": "public",
+          "branch_protection_required": true,
+          "actions_enabled": false,
+          "team_count": 1,
+          "audit_log_reference": null,
+          "upstream_noise": "must-not-escape"
+        }
+      ],
+      "next_page": null
+    }
+  ]
+}
