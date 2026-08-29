@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://canonical.cloud/schemas/audit-package-v1.schema.json",
+  "title": "Canonical Audit Package v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["manifest", "observations"],
+  "properties": {
+    "manifest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "package_id",
+        "tenant_id",
+        "scope_id",
+        "assessment_period",
+        "observation_ids",
+        "manifest_sha256"
+      ],
+      "properties": {
+        "schema_version": { "const": "canonical.audit-package/v1" },
+        "package_id": { "$ref": "#/$defs/digest" },
+        "tenant_id": { "type": "string" },
+        "scope_id": { "type": "string" },
+        "assessment_period": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["starts_at", "ends_at"],
+          "properties": {
+            "starts_at": { "type": "integer", "minimum": 0 },
+            "ends_at": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "observation_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/digest" }
+        },
+        "manifest_sha256": { "$ref": "#/$defs/digest" }
+      }
+    },
+    "observations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["observation_id", "content_sha256"]
+      }
+    }
+  },
+  "$defs": {
+    "digest": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    }
+  }
+}

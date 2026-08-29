@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://canonical.cloud/schemas/evidence-observation-input-v1.schema.json",
+  "title": "Canonical Evidence Observation Input v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "tenant_id",
+    "scope_id",
+    "evidence_type",
+    "source",
+    "collector_identity",
+    "collected_at",
+    "valid_until",
+    "normalized",
+    "content_sha256"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "canonical.evidence-observation-input/v1"
+    },
+    "tenant_id": {
+      "$ref": "#/$defs/identifier"
+    },
+    "scope_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 240,
+      "pattern": "^[A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*$"
+    },
+    "evidence_type": {
+      "$ref": "#/$defs/identifier"
+    },
+    "source": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "submitted_by"],
+          "properties": {
+            "kind": { "const": "manual" },
+            "submitted_by": { "$ref": "#/$defs/identifier" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "connector", "adapter_version"],
+          "properties": {
+            "kind": { "const": "automated" },
+            "connector": { "$ref": "#/$defs/identifier" },
+            "adapter_version": { "$ref": "#/$defs/identifier" }
+          }
+        }
+      ]
+    },
+    "collector_identity": {
+      "$ref": "#/$defs/identifier"
+    },
+    "collected_at": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "valid_until": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "normalized": {
+      "type": "object"
+    },
+    "content_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    }
+  },
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 160,
+      "pattern": "^[A-Za-z0-9_.:@-]+$"
+    }
+  }
+}
