@@ -1,3 +1,7 @@
+## Linear
+
+- Issue or project: https://linear.app/denman/project/githubcomcanonical-cloud-1659c8ea1adf
+
 ## Purpose
 
 Describe the problem, intended behavior, and why this repository owns the change.
@@ -20,7 +24,8 @@ Describe the problem, intended behavior, and why this repository owns the change
 - [ ] If SQL changes, declarations use the registered logical namespace `<organization>.<domain>` and stable `<domain>_` object prefixes where a shared PostgreSQL schema such as `public` is required.
 - [ ] Domain SQL may remain in the owning organization, but identity, ordering, checksums, drift detection, and promotion are registered through `declarative-migrations`.
 - [ ] JSON Schema, generated language interfaces, ORM models, fixtures, and migration declarations were updated and checked deterministically together.
-- [ ] Destructive changes include compatibility, backfill, rollback, tenant isolation, and row-level-security evidence.
+- [ ] Application startup validates schema compatibility and does not apply production DDL.
+- [ ] Destructive changes include compatibility, backfill, rollback, tenant isolation, row-level-security, idempotency, and state-machine evidence.
 
 ## Infrastructure and end-to-end coverage
 
@@ -39,3 +44,9 @@ List formatters, linters, tests, builds, schema/codegen checks, migration valida
 - [ ] Conflicts were resolved semantically using both sides and relevant history.
 - [ ] Destructive Git recovery, force pushes to protected branches, and history rewrites were not used.
 - [ ] Logs and traces exclude secrets and user content by default and preserve tenant boundaries.
+- [ ] Authentication and authorization fail closed; sensitive operations are auditable.
+- [ ] ORES OTEL trace and correlation propagation is verified where applicable.
+
+## Risks and roll-forward plan
+
+Document residual risks, monitoring, cross-repository dependencies, immutable pins, staged rollout, reversible roll-forward handling, and intentionally deferred work.
