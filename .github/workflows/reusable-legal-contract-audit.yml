@@ -12,6 +12,9 @@ on:
 permissions:
   contents: read
 
+env:
+  TJSV_SHA: 5b04b08512f8a03a376dcb96818969e2d83c2d84
+
 jobs:
   legal-contract:
     runs-on: ubuntu-latest
@@ -20,9 +23,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
+      - name: Install pinned TypeSpec JSON Schema validator from GitHub
+        run: npm install --no-save "https://github.com/ORESoftware/typespec-json-schema-validator/archive/${TJSV_SHA}.tar.gz"
       - name: TypeSpec ↔ JSON Schema parity and corpus
         run: >-
-          npx --yes --package @oresoftware/typespec-json-schema-validator tjsv check
+          ./node_modules/.bin/tjsv check
           --typespec=contracts/main.tsp
           --schema=contracts/authored.schema.json
           --instances=contracts/instances
@@ -45,5 +50,5 @@ jobs:
             echo "::error::oresc is required by this caller but is not installed"
             exit 1
           else
-            echo "::notice::oresc is not installed; tjsv and deterministic projection checks completed"
+            echo "::notice::oresc is not installed; pinned tjsv and deterministic projection checks completed"
           fi
