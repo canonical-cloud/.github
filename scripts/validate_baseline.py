@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import re
+import subprocess
 import sys
 from pathlib import Path
 
@@ -44,6 +45,16 @@ def fail(message: str) -> None:
 missing = [path for path in REQUIRED if not (ROOT / path).is_file()]
 if missing:
     fail('missing required files: ' + ', '.join(missing))
+
+# Git can track both spellings even when macOS presents only one file. Check
+# the index, not directory listings, so a Linux-only casing regression fails.
+tracked = subprocess.check_output(
+    ['git', '-C', str(ROOT), 'ls-files', '-z'], text=True,
+).split('\0')
+for template in ('pull_request_template.md', '.github/pull_request_template.md'):
+    matches = [path for path in tracked if path.casefold() == template]
+    if len(matches) != 1:
+        fail(f'expected one case-unambiguous {template}, found {matches}')
 
 agents = (ROOT / 'agents.md').read_text(encoding='utf-8')
 for phrase in PHRASES:
@@ -96,7 +107,6 @@ for path in workflow_paths:
     if 'actions/checkout@' in text and 'persist-credentials: false' not in text:
         fail(f'checkout credentials persist in {path.relative_to(ROOT)}')
 
-import subprocess
 relationship_check = subprocess.run(
     [sys.executable, str(ROOT / 'scripts/validate_repository_relationships.py'), str(ROOT)],
     text=True, capture_output=True, check=False,
