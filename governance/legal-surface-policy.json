@@ -1,0 +1,27 @@
+{
+  "schema": "ores.legal-surface-policy/v1",
+  "organization": "canonical-cloud",
+  "docsRepository": "canonical-cloud/canonical-docs",
+  "patternSource": "ores-legal/ores-legal-docs",
+  "authorities": {
+    "typespec": "contracts/main.tsp",
+    "jsonSchema": "contracts/authored.schema.json",
+    "registry": "contracts/instances/LegalRegistry/valid/registry.json",
+    "runtimeManifest": "generated/legal-runtime-manifest.json"
+  },
+  "statusPolicy": {
+    "runtimeAdmitted": ["approved"],
+    "runtimeBlocked": ["draft", "review_required", "gap"]
+  },
+  "surfaces": [
+    {"surface":"canonical-cli","requiredFamilies":["cli_tools","eula","software_license","privacy_data","security"],"acceptanceRequired":true},
+    {"surface":"canonical-sidecar.rs","requiredFamilies":["end_user_runtime","software_license","privacy_data","security"],"acceptanceRequired":true},
+    {"surface":"canonical-desktop-app.rs","requiredFamilies":["end_user_runtime","eula","software_license","privacy_data"],"acceptanceRequired":true},
+    {"surface":"collectors-and-connectors","requiredFamilies":["privacy_data","security","customer_services"],"acceptanceRequired":false},
+    {"surface":"readiness-evidence-and-reports","requiredFamilies":["privacy_data","customer_services","service_objective","security"],"acceptanceRequired":false},
+    {"surface":"hosted-services","requiredFamilies":["customer_services","service_level","service_objective","privacy_data","security"],"acceptanceRequired":false},
+    {"surface":"professional-services","requiredFamilies":["customer_services","statement_of_work","nda"],"acceptanceRequired":false}
+  ],
+  "reviewTriggers": ["iam-scope","credentials","read-vs-mutate","collectors","connectors","customer-hosted-runtime","networking","telemetry","subprocessors","retention","data-residency","report-claims","remediation","billing","service-levels","professional-services"],
+  "forbiddenGitContent": ["executed-agreements","signatures","customer-evidence","credentials","privileged-communications","personnel-records","identity-documents"]
+}

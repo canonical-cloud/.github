@@ -1,0 +1,49 @@
+name: reusable-legal-contract-audit
+
+on:
+  workflow_call:
+    inputs:
+      require_ores_cli:
+        description: Fail when oresc is unavailable on the runner.
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  legal-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: TypeSpec ↔ JSON Schema parity and corpus
+        run: >-
+          npx --yes --package @oresoftware/typespec-json-schema-validator tjsv check
+          --typespec=contracts/main.tsp
+          --schema=contracts/authored.schema.json
+          --instances=contracts/instances
+          --report=.typespec-json-schema-validator/legal-contract-report.json
+      - name: Verify deterministic legal projections
+        run: node scripts/legal-sync.mjs --check
+      - name: ores-cli repository and contract audit
+        env:
+          REQUIRE_ORES_CLI: ${{ inputs.require_ores_cli }}
+        shell: bash
+        run: |
+          if command -v oresc >/dev/null 2>&1; then
+            oresc audit repo --path . --profile docs \
+              --required-paths contracts/main.tsp,contracts/authored.schema.json,contracts/instances,generated/README.md
+            oresc audit contract \
+              --typespec contracts/main.tsp \
+              --schema contracts/authored.schema.json \
+              --report .typespec-json-schema-validator/ores-cli-legal-contract-report.json
+          elif [[ "$REQUIRE_ORES_CLI" == "true" ]]; then
+            echo "::error::oresc is required by this caller but is not installed"
+            exit 1
+          else
+            echo "::notice::oresc is not installed; tjsv and deterministic projection checks completed"
+          fi
