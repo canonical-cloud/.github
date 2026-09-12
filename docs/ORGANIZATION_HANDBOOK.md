@@ -27,6 +27,10 @@ Pull requests should include reproducible commands, plan output or equivalent ev
 
 Never commit credentials, private keys, state files containing secrets, production data, or sensitive logs. Follow `SECURITY.md` for private vulnerability reporting. Use least privilege, pin dependencies/actions/images, verify provenance, and treat shared workflows as versioned APIs.
 
+## Legal documents and pricing
+
+Legal templates, the agreement catalog, and the service-tier/pricing data are drafted in `canonical-docs` and governed by [`policies/LEGAL_DOCUMENT_GOVERNANCE.md`](../policies/LEGAL_DOCUMENT_GOVERNANCE.md). Prices, support targets, and SOW packages change in one data file and are rendered into the legal documents and the public prices page; the two contract authorities (TypeSpec and JSON Schema) are edited together and compared by `tjsv`; executed instruments live in the records system and the ores-legal signing platform, never in git.
+
 ## Documentation and decisions
 
 Keep examples executable and sanitized, links current, assumptions explicit, and ownership boundaries clear. Record architectural, provider, security, state, compatibility, cost, and operational decisions that future maintainers would otherwise have to rediscover.
