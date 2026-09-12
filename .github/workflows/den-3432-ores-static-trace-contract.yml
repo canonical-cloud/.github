@@ -1,0 +1,69 @@
+name: ORES static trace contract
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  static-trace-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - name: Validate newly-added trace call sites
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import os, re, subprocess, sys
+
+          event = os.environ.get('GITHUB_EVENT_NAME', '')
+          base = os.environ.get('GITHUB_BASE_REF')
+          if event == 'pull_request' and base:
+              subprocess.run(['git', 'fetch', '--no-tags', '--depth=1', 'origin', base], check=False)
+              diff_base = f'origin/{base}'
+          else:
+              diff_base = 'HEAD^'
+
+          proc = subprocess.run(
+              ['git', 'diff', '--unified=0', diff_base, 'HEAD', '--'],
+              text=True,
+              stdout=subprocess.PIPE,
+              stderr=subprocess.PIPE,
+              check=False,
+          )
+          diff = proc.stdout
+          added = []
+          for line in diff.splitlines():
+              if line.startswith('+++'):
+                  continue
+              if line.startswith('+'):
+                  added.append(line[1:])
+
+          errors = []
+          static_call = re.compile(r"\.(?:addTrace|addTraceId|add_trace|add_trace_id)\s*\(\s*(['\"])([^'\"]+)\1")
+          for line in added:
+              if 'dd-trace-' in line:
+                  errors.append(f'new legacy dd-trace prefix: {line.strip()}')
+              if '.addRoutine(' in line:
+                  errors.append(f'use canonical addRoutineId(): {line.strip()}')
+              for match in static_call.finditer(line):
+                  value = match.group(2)
+                  if not value.startswith('ores-trace-'):
+                      errors.append(f'static trace id must start with ores-trace-: {value}')
+
+          if errors:
+              print('Static trace contract violations:')
+              for error in errors:
+                  print(f'  - {error}')
+              sys.exit(1)
+
+          print('ORES static trace contract passed for added lines.')
+          print('Runtime/request trace IDs may remain dynamic correlation fields; new code-site literal IDs use ores-trace-.')
+          print('Cross-runtime TypeSpec/JSON Schema parity remains fail-closed through ORESoftware/typespec-json-schema-validator.')
+          PY
