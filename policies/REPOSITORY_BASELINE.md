@@ -5,7 +5,7 @@ The public `.github` repository supplies only GitHub-supported fallback files. I
 
 Each active repository should therefore maintain:
 
-- a local lowercase `agents.md` derived from this policy plus repository-specific constraints;
+- a local `AGENTS.md` (a real tracked file, not a symlink; legacy lowercase `agents.md` is accepted until migrated, but never both with different content) derived from this policy plus repository-specific constraints;
 - provider mirrors or pointers as required by the tools used in that repository;
 - explicit least-privilege workflow permissions and job timeouts;
 - full commit-SHA pins for external Actions;
