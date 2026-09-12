@@ -1,0 +1,8 @@
+{
+  "name": "Legal contract integrity",
+  "description": "Check counsel-owned legal metadata, TypeSpec/JSON Schema parity, generated projections, and optional ores-cli repository governance.",
+  "iconName": "octicon law",
+  "categories": [
+    "continuous-integration"
+  ]
+}

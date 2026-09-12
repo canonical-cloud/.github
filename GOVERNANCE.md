@@ -20,10 +20,12 @@ page in `canonical-cloud.github.io` renders a synced copy of the same data;
 executed instruments live only in the governed records system and the
 ores-legal signing platform. [`policies/LEGAL_DOCUMENT_GOVERNANCE.md`](policies/LEGAL_DOCUMENT_GOVERNANCE.md)
 names the owner of each concern, the signing routes, the minimum coverage, and
-the checks every legal change must pass; the selectable
-[`legal-corpus-audit`](workflow-templates/legal-corpus-audit.yml) workflow
-template installs those checks in any repository that carries a `docs/legal/`
-tree.
+the checks every legal change must pass; [`LEGAL_GOVERNANCE.md`](LEGAL_GOVERNANCE.md)
+is the short organization standard, and the selectable
+[`legal-contract-integrity`](workflow-templates/legal-contract-integrity.yml)
+workflow template with the reusable
+[`reusable-legal-contract-audit.yml`](.github/workflows/reusable-legal-contract-audit.yml)
+workflow installs the contract checks in any repository that carries them.
 
 <!-- ore-org-baseline:begin -->
 ## Sources of truth

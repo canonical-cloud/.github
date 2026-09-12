@@ -1,0 +1,135 @@
+name: reusable-legal-contract-audit
+
+on:
+  workflow_call:
+    inputs:
+      profile:
+        description: ores-cli repository audit profile
+        required: false
+        type: string
+        default: docs
+      typespec_path:
+        description: optional TypeSpec authority path
+        required: false
+        type: string
+        default: ''
+      schema_path:
+        description: optional authored Draft 2020-12 JSON Schema authority path
+        required: false
+        type: string
+        default: ''
+      instances_path:
+        description: optional TJSV instance corpus path
+        required: false
+        type: string
+        default: ''
+    secrets:
+      ORES_TOOLING_READ_TOKEN:
+        description: least-privilege read token for private ORESoftware/ores-cli
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    env:
+      ORES_CLI_SHA: e488618973f8400a8fc8b6f98ecc870c7ba12e39
+      TJSV_SHA: 5b04b08512f8a03a376dcb96818969e2d83c2d84
+      AUDIT_PROFILE: ${{ inputs.profile }}
+      TYPESPEC_PATH: ${{ inputs.typespec_path }}
+      SCHEMA_PATH: ${{ inputs.schema_path }}
+      INSTANCES_PATH: ${{ inputs.instances_path }}
+    steps:
+      - name: Check out caller repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+
+      - name: Check out exact ores-cli
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: ORESoftware/ores-cli
+          ref: ${{ env.ORES_CLI_SHA }}
+          token: ${{ secrets.ORES_TOOLING_READ_TOKEN }}
+          persist-credentials: false
+          fetch-depth: 1
+          path: .tooling/ores-cli
+
+      - name: Install exact Rust toolchain
+        uses: dtolnay/rust-toolchain@4be7066ada62dd38de10e7b70166bc74ed198c30
+        with:
+          toolchain: 1.95.0
+
+      - name: Build exact ores-cli
+        working-directory: .tooling/ores-cli
+        run: cargo build --release --locked --bin oresc
+
+      - name: Audit caller repository
+        env:
+          FLAGS2ENV_CONFIG: ${{ github.workspace }}/.tooling/ores-cli/.cli-flags.toml
+        run: |
+          set -euo pipefail
+          .tooling/ores-cli/target/release/oresc --no-json audit repo --path . --profile "$AUDIT_PROFILE"
+
+      - name: Require a complete optional contract pair
+        run: |
+          set -euo pipefail
+          if [[ -n "$TYPESPEC_PATH" || -n "$SCHEMA_PATH" || -n "$INSTANCES_PATH" ]]; then
+            test -n "$TYPESPEC_PATH"
+            test -n "$SCHEMA_PATH"
+          fi
+
+      - name: Check out exact TJSV
+        if: ${{ inputs.typespec_path != '' && inputs.schema_path != '' }}
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: ORESoftware/typespec-json-schema-validator
+          ref: ${{ env.TJSV_SHA }}
+          persist-credentials: false
+          fetch-depth: 1
+          path: .tooling/tjsv
+
+      - name: Install exact TJSV dependencies
+        if: ${{ inputs.typespec_path != '' && inputs.schema_path != '' }}
+        run: npm ci --prefix .tooling/tjsv --ignore-scripts --no-audit --no-fund
+
+      - name: Expose exact tjsv executable
+        if: ${{ inputs.typespec_path != '' && inputs.schema_path != '' }}
+        run: |
+          set -euo pipefail
+          mkdir -p .tooling/bin
+          cat > .tooling/bin/tjsv <<'EOF'
+          #!/usr/bin/env bash
+          set -euo pipefail
+          exec node "$GITHUB_WORKSPACE/.tooling/tjsv/bin/typespec-json-schema-validator.mjs" "$@"
+          EOF
+          chmod 0700 .tooling/bin/tjsv
+          echo "$GITHUB_WORKSPACE/.tooling/bin" >> "$GITHUB_PATH"
+
+      - name: Run TJSV direct parity gate
+        if: ${{ inputs.typespec_path != '' && inputs.schema_path != '' }}
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts
+          args=(check "--typespec=$TYPESPEC_PATH" "--schema=$SCHEMA_PATH" "--report=artifacts/legal-contract-tjsv.json" --quiet)
+          if [[ -n "$INSTANCES_PATH" ]]; then args+=("--instances=$INSTANCES_PATH"); fi
+          tjsv "${args[@]}"
+          test -s artifacts/legal-contract-tjsv.json
+
+      - name: Run the same contract through ores-cli
+        if: ${{ inputs.typespec_path != '' && inputs.schema_path != '' }}
+        env:
+          FLAGS2ENV_CONFIG: ${{ github.workspace }}/.tooling/ores-cli/.cli-flags.toml
+        run: |
+          set -euo pipefail
+          .tooling/ores-cli/target/release/oresc --no-json audit contract \
+            --typespec "$TYPESPEC_PATH" \
+            --schema "$SCHEMA_PATH" \
+            --report artifacts/legal-contract-ores-cli.json
+          test -s artifacts/legal-contract-ores-cli.json
+
+      - name: Reject whitespace and patch errors
+        run: git diff-tree --check --root HEAD --

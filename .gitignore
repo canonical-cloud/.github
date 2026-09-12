@@ -3,4 +3,6 @@ temp
 tmp/worktrees
 temp/worktrees
 __pycache__/
+*.py[cod]
+__pycache__/
 *.pyc
