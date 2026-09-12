@@ -6,6 +6,7 @@
 4. Keep generated files reproducible and identify their source.
 5. Never resolve conflicts by blindly choosing "ours" or "theirs". Inspect the base, both branches, nearby history, tests, and downstream consumers; then construct the smallest coherent combined result.
 6. Do not commit credentials, private keys, tokens, production data, or personal information.
+7. Legal templates, pricing data, and their contracts follow [`policies/LEGAL_DOCUMENT_GOVERNANCE.md`](policies/LEGAL_DOCUMENT_GOVERNANCE.md): change the data, not the rendered tables; keep both contract authorities in the same change; never commit an executed instrument, a filled placeholder, or a personal identifier.
 
 ## AI-assisted pull-request promotion
 

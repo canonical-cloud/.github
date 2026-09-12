@@ -38,3 +38,11 @@ Generated managed-policy version: `2026-08-08`.
 
 The public registry withholds private repository names and edges.
 <!-- END MANAGED REPOSITORY RELATIONSHIPS v1 -->
+
+## Legal documents
+
+The organization's legal templates, agreement catalog, service tiers and
+pricing data, and their machine-checked contracts are governed by
+[`policies/LEGAL_DOCUMENT_GOVERNANCE.md`](policies/LEGAL_DOCUMENT_GOVERNANCE.md).
+Drafts live in `canonical-docs`; executed instruments never live in a
+repository.

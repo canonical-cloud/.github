@@ -11,6 +11,20 @@ Material changes should record:
 
 Conflicted changes are merged by intent, not line selection. A semantic reconciliation should preserve non-conflicting additions from both sides and explicitly resolve incompatible assumptions.
 
+## Legal documents
+
+Legal templates, the agreement catalog, the service-tier and pricing data, the
+TypeSpec + JSON Schema contracts that govern that data, and the registry
+extracted from the templates all live in `canonical-docs`; the public prices
+page in `canonical-cloud.github.io` renders a synced copy of the same data;
+executed instruments live only in the governed records system and the
+ores-legal signing platform. [`policies/LEGAL_DOCUMENT_GOVERNANCE.md`](policies/LEGAL_DOCUMENT_GOVERNANCE.md)
+names the owner of each concern, the signing routes, the minimum coverage, and
+the checks every legal change must pass; the selectable
+[`legal-corpus-audit`](workflow-templates/legal-corpus-audit.yml) workflow
+template installs those checks in any repository that carries a `docs/legal/`
+tree.
+
 <!-- ore-org-baseline:begin -->
 ## Sources of truth
 
