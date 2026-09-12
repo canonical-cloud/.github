@@ -47,7 +47,7 @@ Thank you for contributing to repositories owned by [`canonical-cloud`](https://
 
 ## Before proposing a change
 
-1. Read the repository README, contribution notes, lowercase `agents.md`, architecture documentation, linked issues, and relevant [Linear project](https://linear.app/denman/project/githubcomcanonical-cloud-1659c8ea1adf).
+1. Read the repository README, contribution notes, `AGENTS.md`, architecture documentation, linked issues, and relevant [Linear project](https://linear.app/denman/project/githubcomcanonical-cloud-1659c8ea1adf).
 2. Confirm the authoritative source repository and whether files are generated, vendored, mirrored, or owned by another repository.
 3. Fetch current remote state and preserve concurrent work. Avoid git rebase in favor of git merge.
 4. Do not use `git stash`, `git reset`, `git clean`, `git filter-repo`, force-push, destructive worktree/submodule operations, or broad deletion/rewrite commands without exact authorization.

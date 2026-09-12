@@ -1,6 +1,6 @@
 {
   "name": "Organization policy",
-  "description": "Validate lowercase agent policy, reject conflict markers, and require immutable Action pins.",
+  "description": "Validate agent policy (AGENTS.md, legacy agents.md accepted), reject conflict markers, and require immutable Action pins.",
   "iconName": "octicon shield",
   "categories": [
     "continuous-integration"
