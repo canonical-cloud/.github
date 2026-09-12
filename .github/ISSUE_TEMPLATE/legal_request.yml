@@ -1,0 +1,92 @@
+name: Legal / contract request
+description: Route a public-safe legal-document, contract, licensing, workforce, or audit-waiver change. Do not include sensitive matter facts.
+title: "[Legal]: "
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Public-safe routing only.** Do not include customer or employee names, negotiated terms, privileged advice, signatures, identity documents, financial data, secrets, vulnerabilities, settlement positions, or regulated evidence. Put sensitive facts in the approved private legal/matter system. This issue is not legal advice or approval.
+
+  - type: dropdown
+    id: matter_type
+    attributes:
+      label: Matter type
+      options:
+        - Customer agreement / MSA / SOW / order form
+        - Amendment / renewal / termination / transition
+        - Customer waiver / contract exception
+        - EULA / software / API / IP license
+        - NDA / confidentiality / invention assignment
+        - Privacy / DPA / data / security terms
+        - Employment / contractor / advisor / offer
+        - Separation / termination / onboarding / offboarding
+        - Corporate governance / equity / intercompany
+        - Vendor / partner / reseller / procurement
+        - Audit-tool exception / waiver governance
+        - Legal metadata / TypeSpec / JSON Schema / generated projection
+        - Specialist legal intake / other
+    validations:
+      required: true
+
+  - type: input
+    id: affected_repo
+    attributes:
+      label: Affected repository or system
+      description: Public-safe repository/system identifier only.
+      placeholder: canonical-cloud/canonical-docs
+    validations:
+      required: true
+
+  - type: input
+    id: document_ids
+    attributes:
+      label: Stable legal document ID(s), if known
+      placeholder: end-user-license-agreement, customer-order-form
+
+  - type: dropdown
+    id: change_class
+    attributes:
+      label: Change class
+      options:
+        - New template / new governed matter type
+        - Clarification with no intended risk-allocation change
+        - Substantive legal/risk-allocation change
+        - Machine-contract / schema / generated-metadata change
+        - Audit / lint / waiver-policy change
+        - Lifecycle / deprecation / retirement
+    validations:
+      required: true
+
+  - type: textarea
+    id: public_safe_summary
+    attributes:
+      label: Public-safe summary
+      description: Describe the requested outcome without party names, negotiation facts, PII, secrets, privileged advice, or raw evidence.
+      placeholder: Add a governed template and machine metadata for...
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: reviewers
+    attributes:
+      label: Review domains likely needed
+      options:
+        - label: Legal / qualified counsel
+        - label: Employment / HR
+        - label: Privacy / data protection
+        - label: Security / incident response
+        - label: Finance / tax
+        - label: Product / engineering
+        - label: Business / sales / procurement
+        - label: Independent assurance / audit coordination
+
+  - type: checkboxes
+    id: safety_ack
+    attributes:
+      label: Repository safety
+      options:
+        - label: I have not included customer/employee personal data, secrets, executed signatures, privileged advice, or sensitive negotiation facts in this issue.
+          required: true
+        - label: I understand a merged PR, CI pass, TJSV receipt, or ores-cli result is not legal approval or an executed agreement.
+          required: true

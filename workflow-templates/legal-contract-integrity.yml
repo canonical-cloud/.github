@@ -1,0 +1,129 @@
+name: Legal contract integrity
+
+on:
+  pull_request:
+    paths:
+      - "docs/legal/**"
+      - "contracts/legal/**"
+      - "generated/**"
+      - "scripts/legal_contract_sync.py"
+      - "scripts/check_legal*.py"
+      - ".github/workflows/**"
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: legal-contract-integrity-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  legal-integrity:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Check out exact reviewed head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+          show-progress: false
+          fetch-depth: 1
+
+      - name: Verify exact source and patch hygiene
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+          git diff --check
+
+      - name: Verify docs/code legal metadata synchronization
+        if: ${{ hashFiles('scripts/legal_contract_sync.py') != '' }}
+        run: python3 scripts/legal_contract_sync.py --check
+
+      - name: Run repository-specific legal structural checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          for checker in scripts/check_legal.py scripts/check_legal_catalog.py scripts/check_legal_lifecycle.py; do
+            if [ -f "$checker" ]; then
+              python3 "$checker"
+            fi
+          done
+
+      - name: Prepare TJSV evidence directory
+        if: ${{ hashFiles('contracts/legal/main.tsp', 'contracts/legal/authored.schema.json') != '' }}
+        run: mkdir -p .typespec-json-schema-validator/legal/generated
+
+      - name: Admit legal TypeSpec and JSON Schema peers
+        if: ${{ hashFiles('contracts/legal/main.tsp', 'contracts/legal/authored.schema.json') != '' }}
+        uses: ORESoftware/typespec-json-schema-validator@85a0cd9a7dc113c6cdbb473f3b60786d032d8513
+        with:
+          typespec: contracts/legal/main.tsp
+          schema: contracts/legal/authored.schema.json
+          instances: contracts/legal/instances
+          report: .typespec-json-schema-validator/legal/report.json
+          sarif: .typespec-json-schema-validator/legal/report.sarif
+          contract_ir: .typespec-json-schema-validator/legal/contract-ir.json
+          output_dir: .typespec-json-schema-validator/legal/generated
+          max_probes: "128"
+          int64_strategy: string
+          seal_object_schemas: "true"
+          polymorphic_models_strategy: oneOf
+
+      - name: Retain parity evidence
+        if: ${{ always() && hashFiles('.typespec-json-schema-validator/**') != '' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: legal-contract-evidence-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .typespec-json-schema-validator
+          include-hidden-files: true
+          retention-days: 90
+
+  ores-cli:
+    # ORESoftware/ores-cli is private. Repositories that enable the organization variable
+    # CANONICAL_ORES_CLI_AUDIT must also provide ORES_CLI_REPO_TOKEN with read access.
+    if: ${{ vars.CANONICAL_ORES_CLI_AUDIT == 'true' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      ORES_CLI_REPO_TOKEN: ${{ secrets.ORES_CLI_REPO_TOKEN }}
+    steps:
+      - name: Require ores-cli source credential
+        run: test -n "$ORES_CLI_REPO_TOKEN"
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+          show-progress: false
+          fetch-depth: 1
+
+      - name: Check out pinned ores-cli
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ORESoftware/ores-cli
+          ref: e488618973f8400a8fc8b6f98ecc870c7ba12e39
+          token: ${{ secrets.ORES_CLI_REPO_TOKEN }}
+          persist-credentials: false
+          show-progress: false
+          fetch-depth: 1
+          path: _tools/ores-cli
+
+      - uses: dtolnay/rust-toolchain@4be7066ada62dd38de10e7b70166bc74ed198c30
+        with:
+          toolchain: "1.95.0"
+
+      - name: Run the canonical repository audit
+        env:
+          FLAGS2ENV_CONFIG: ${{ github.workspace }}/_tools/ores-cli/.cli-flags.toml
+        run: |
+          set -euo pipefail
+          cargo run --locked --quiet \
+            --manifest-path _tools/ores-cli/Cargo.toml \
+            --bin oresc -- \
+            audit repo --path "$GITHUB_WORKSPACE" --profile docs
