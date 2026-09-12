@@ -40,9 +40,16 @@ The legal corpus should maintain reviewed templates or playbooks for:
   invention assignment, workforce onboarding/offboarding, termination notice,
   and separation/release;
 - corporate governance, founder/equity, board/stockholder consents, conflicts,
-  and information security; and
+  and information security;
 - independent-evaluator coordination with an explicit readiness-versus-
-  assurance boundary.
+  assurance boundary; and
+- a readiness engagement disclaimer (`canonical-docs`
+  `docs/legal/external/readiness-engagement-disclaimer.md`) that every tier,
+  pre-audit, training, and security-readiness offer references, and whose
+  approved public summary backs the canonical.plus `/legal/` page: Canonical
+  Cloud is not a CPA firm, law firm, certification body, or assessor, issues no
+  audit opinions, attestations, certifications, or authorizations, and provides
+  no legal advice.
 
 Templates are not automatically safe for a real matter. Counsel must select and
 localize the actual form and contract stack.
