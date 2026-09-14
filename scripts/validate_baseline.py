@@ -8,7 +8,7 @@ from pathlib import Path
 
 ROOT = Path(sys.argv[1] if len(sys.argv) > 1 else '.').resolve()
 REQUIRED = [
-    'README.md', 'profile/README.md', 'ORG_CONTEXT.md', 'agents.md', 'AGENTS.md',
+    'README.md', 'profile/README.md', 'ORG_CONTEXT.md', 'AGENTS.md',
     'CONTRIBUTING.md', 'SECURITY.md', 'SUPPORT.md', 'CODE_OF_CONDUCT.md',
     'GOVERNANCE.md', '.github/pull_request_template.md',
     '.github/copilot-instructions.md', '.github/dependabot.yml',
@@ -51,15 +51,19 @@ if missing:
 tracked = subprocess.check_output(
     ['git', '-C', str(ROOT), 'ls-files', '-z'], text=True,
 ).split('\0')
-for template in ('pull_request_template.md', '.github/pull_request_template.md'):
+for template in ('agents.md', 'pull_request_template.md', '.github/pull_request_template.md'):
     matches = [path for path in tracked if path.casefold() == template]
     if len(matches) != 1:
         fail(f'expected one case-unambiguous {template}, found {matches}')
 
-agents = (ROOT / 'agents.md').read_text(encoding='utf-8')
+# AGENTS.md is the single canonical, real (non-symlink) policy file. A tracked
+# lowercase twin collides with it on case-insensitive checkouts.
+if 'AGENTS.md' not in tracked or (ROOT / 'AGENTS.md').is_symlink():
+    fail('AGENTS.md must be a real tracked file with no case-variant twin')
+agents = (ROOT / 'AGENTS.md').read_text(encoding='utf-8')
 for phrase in PHRASES:
     if phrase not in agents:
-        fail(f'agents.md missing required phrase: {phrase!r}')
+        fail(f'AGENTS.md missing required phrase: {phrase!r}')
 
 for path in ROOT.rglob('*'):
     if not path.is_file() or '.git' in path.parts:

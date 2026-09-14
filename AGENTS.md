@@ -12,7 +12,7 @@ These instructions apply to this repository. Repository-local instructions may a
 
 ## Instruction discovery
 
-Lowercase `agents.md` is canonical. Read every applicable lowercase `agents.md` from the repository root toward the current working directory before editing. Uppercase `AGENTS.md` and provider-specific instruction files are compatibility mirrors and must remain aligned with the applicable lowercase policy.
+`AGENTS.md` is canonical. Read every applicable `AGENTS.md` (or legacy lowercase `agents.md` in a repository that has not migrated yet) from the repository root toward the current working directory before editing. Track exactly one case spelling per directory: case-variant duplicates collide on case-insensitive checkouts (macOS, Windows), so a repository that still tracks both must keep them byte-identical until it removes the lowercase copy. Provider-specific instruction files are compatibility pointers and must remain aligned with the applicable `AGENTS.md`.
 
 ## Inspect before editing
 

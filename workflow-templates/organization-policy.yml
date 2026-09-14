@@ -23,15 +23,25 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
-      - name: Require lowercase agent policy
+      - name: Require agent policy
         shell: bash
         run: |
-          test -f agents.md
-          grep -Fq "avoid git rebase in favor of git merge" agents.md
-          grep -Fq "git stash" agents.md
-          grep -Fq "git reset" agents.md
-          grep -Fq "git clean" agents.md
-          grep -Fq "git filter-repo" agents.md
+          set -euo pipefail
+          # AGENTS.md is canonical; legacy lowercase agents.md is still accepted
+          # so repositories that have not migrated keep passing. If both
+          # spellings are tracked they must be identical, because they collide
+          # on case-insensitive checkouts.
+          policy=""
+          if test -f AGENTS.md; then policy=AGENTS.md; elif test -f agents.md; then policy=agents.md; fi
+          test -n "$policy" || { echo "::error::AGENTS.md is missing"; exit 1; }
+          if test -f AGENTS.md && test -f agents.md && ! cmp -s AGENTS.md agents.md; then
+            echo "::error::AGENTS.md and agents.md are both tracked with different content"; exit 1
+          fi
+          grep -Fq "avoid git rebase in favor of git merge" "$policy"
+          grep -Fq "git stash" "$policy"
+          grep -Fq "git reset" "$policy"
+          grep -Fq "git clean" "$policy"
+          grep -Fq "git filter-repo" "$policy"
       - name: Reject unresolved conflict markers
         shell: bash
         run: |
