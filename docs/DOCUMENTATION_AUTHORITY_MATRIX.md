@@ -18,8 +18,8 @@ A lower row must not silently override a higher-level authority for a different 
 | HTTP/RPC route names, methods and paths | `canonical-interfaces/route-maps/*` and their admitted generator | API/web/CLI/SDK/docs | a service README or literal client URL creates a parallel production route authority |
 | Generated language adapters | admitted source contracts/Contract IR + generator | Rust, Rust-WASM, TypeScript, Python, Go, Dart consumers | hand edits resolve drift |
 | API documentation | generated/validated from the same route and message contracts | customer/internal API docs | prose API examples outrank compiled route/type contracts |
-| Customer tenant authorization | shared-auth verified principal + server authorization policy | API, web, clients, MCP | body/query/path/header tenant identifiers are authority |
-| Admin authorization | isolated admin service policy, explicit capability + step-up requirements | admin web/API | customer roles or customer-plane credentials imply admin access |
+| Customer tenant authorization | shared-auth verified principal + server authorization policy | API, web, clients, future customer MCP | body/query/path/header/tool tenant identifiers are authority |
+| Admin authorization | isolated admin service policy, explicit capability + step-up requirements | admin web/API and any future admin MCP | customer roles, customer-plane credentials, or ops credentials imply admin access |
 | Persistence schema and migrations | the owning persistence/service declarative migration source, with portable implementation in `canonical-orm-core` where shared | Supabase/Neon deployment targets | a database provider becomes business/wire-contract authority |
 | Relational write authority | one documented authoritative writer + fencing epoch per logical dataset/environment | Supabase/Neon promotion/reconciliation | both providers may independently accept the same logical writes |
 | Offline/sync authority | server contract + `canonical-sync`/opto-sync policy for explicitly synchronizable records | browser/mobile/desktop caches | cached/offline state can rewrite immutable publication records or bypass authorization |
@@ -28,7 +28,7 @@ A lower row must not silently override a higher-level authority for a different 
 | Release composition/pinned application revisions | `canonical-monorepo` gitlinks/release manifest | deploy pipelines | the monorepo owns copied child-repo source or rewrites child contracts |
 | Customer runtime responsibilities | dedicated customer web/API repositories | infra, clients, monorepo | customer web gets privileged DB/R2/admin mutation authority |
 | Admin runtime responsibilities | dedicated admin web/API repositories | infra, monorepo | admin code is merely a future module inside the customer server |
-| Agent/tool exposure | `canonical-mcp-server.rs` for non-admin tools plus shared authorization | MCP clients/agents | tool arguments establish tenant/admin authority |
+| Agent/tool exposure | `canonical-mcp-server.rs` is the ops-only local stdio MCP; customer readiness MCP, if productized, is a separate Shared-Auth/deployment surface; admin MCP remains separately privileged | MCP clients/agents | tool arguments or ops credentials establish customer/admin identity, or one MCP audience may silently cross trust planes |
 | Cross-repo engineering policy and exception registry | `canonical-cloud/.github` | all repos selectively | every repo must carry service-only dependencies or identical controls |
 | Company/product/operating narrative | `canonical-docs` | public/internal planning surfaces | prose becomes executable policy where `.github`, contracts or runtime code own enforcement |
 | Production-operating evidence | deployed runtime/CI/observability/operating records for the exact artifact/environment | claims register and runbooks | repository presence or a green unrelated workflow proves deployment |
