@@ -41,14 +41,32 @@ jobs:
             echo "Unresolved conflict marker detected" >&2
             exit 1
           fi
-      - name: Require immutable external Action pins
+      - name: Enforce workflow supply-chain and privilege baseline
         shell: python
         run: |
           from pathlib import Path
           import re
-          bad = []
-          for path in Path('.github/workflows').glob('*.y*ml'):
-              for number, line in enumerate(path.read_text(encoding='utf-8').splitlines(), 1):
+
+          errors = []
+          workflow_dir = Path('.github/workflows')
+          workflows = sorted([*workflow_dir.glob('*.yml'), *workflow_dir.glob('*.yaml')])
+
+          for path in workflows:
+              text = path.read_text(encoding='utf-8')
+              lines = text.splitlines()
+
+              if not re.search(r'(?m)^permissions:\s*(?:$|\{)', text):
+                  errors.append(f"{path}: missing explicit top-level permissions")
+              if re.search(r'(?m)^permissions:\s*write-all\s*$', text):
+                  errors.append(f"{path}: permissions: write-all is forbidden")
+              if re.search(r'(?m)^\s*pull_request_target:\s*$', text):
+                  errors.append(f"{path}: pull_request_target is forbidden by the baseline; use pull_request or document an approved exception outside CI")
+              if re.search(r'(?m)^\s*secrets:\s*inherit\s*$', text):
+                  errors.append(f"{path}: secrets: inherit is forbidden; pass only named secrets")
+              if re.search(r'(?i)(?:curl|wget)[^\n|]*\|\s*(?:sh|bash)\b', text):
+                  errors.append(f"{path}: network-to-shell execution is forbidden")
+
+              for number, line in enumerate(lines, 1):
                   match = re.search(r'^\s*(?:-\s+)?uses:\s*([^\s#]+)', line)
                   if not match:
                       continue
@@ -57,9 +75,26 @@ jobs:
                       continue
                   if ref.startswith('docker://'):
                       if not re.search(r'@sha256:[0-9a-fA-F]{64}$', ref):
-                          bad.append(f"{path}:{number}: {ref}")
+                          errors.append(f"{path}:{number}: docker action must use sha256 digest: {ref}")
                       continue
                   if not re.search(r'@[0-9a-fA-F]{40}$', ref):
-                      bad.append(f"{path}:{number}: {ref}")
-          if bad:
-              raise SystemExit("External Actions must use full commit SHAs:\n" + "\n".join(bad))
+                      errors.append(f"{path}:{number}: external Action must use full commit SHA: {ref}")
+
+                  if ref.startswith('actions/checkout@'):
+                      window = '\n'.join(lines[number:number + 8])
+                      block_safe = re.search(r'(?m)^\s+persist-credentials:\s*false\s*(?:#.*)?$', window)
+                      inline_safe = re.search(r'with:\s*\{[^}]*persist-credentials:\s*false(?:\s*,|\s*\})', window)
+                      if not (block_safe or inline_safe):
+                          errors.append(f"{path}:{number}: actions/checkout must set persist-credentials: false")
+
+              # Every runner-backed job should be bounded so stuck tooling cannot
+              # consume an unbounded runner allocation. Reusable-workflow jobs
+              # have `uses:` instead of `runs-on:` and are checked by their owner.
+              for match in re.finditer(r'(?m)^  ([A-Za-z0-9_-]+):\n(?P<body>(?:    .*\n|\n)*)', text):
+                  job_name = match.group(1)
+                  body = match.group('body')
+                  if re.search(r'(?m)^    runs-on:', body) and not re.search(r'(?m)^    timeout-minutes:\s*[1-9][0-9]*\s*(?:#.*)?$', body):
+                      errors.append(f"{path}: job {job_name!r} has runs-on but no positive timeout-minutes")
+
+          if errors:
+              raise SystemExit("Workflow security baseline violations:\n" + "\n".join(errors))
