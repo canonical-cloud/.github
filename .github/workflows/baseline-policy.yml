@@ -10,6 +10,11 @@ permissions:
   contents: read
 
 jobs:
+  workflow-security:
+    uses: ./.github/workflows/reusable-policy.yml
+    permissions:
+      contents: read
+
   validate:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
@@ -34,6 +39,8 @@ jobs:
             organization-policy.json
             architecture-authorities.json
             docs/DOCUMENTATION_AUTHORITY_MATRIX.md
+            docs/REPOSITORY_HARDENING_STANDARD.md
+            docs/exact-head-ci-evidence.md
             tools/validate-architecture-authorities.py
           )
           for file in "${required[@]}"; do
