@@ -1,0 +1,272 @@
+{
+  "schema_version": 1,
+  "scope": "public-safe architecture ownership and decision routing metadata",
+  "human_authority_matrix": "docs/DOCUMENTATION_AUTHORITY_MATRIX.md",
+  "privacy": {
+    "public_inventory": "repository-relationships.json",
+    "non_public_inventory": "approved-private-registry/owners/canonical-cloud.json",
+    "rule": "Do not copy non-public repository inventory into this public-safe registry. Compose inventories only inside the authorized trust boundary."
+  },
+  "authority_status_values": [
+    "active",
+    "legacy",
+    "prepared",
+    "pending"
+  ],
+  "authorities": [
+    {
+      "id": "public_claims",
+      "category": "claims",
+      "status": "active",
+      "owner": "canonical-docs claims register",
+      "source": "canonical-cloud/canonical-docs:docs/claims-register.md",
+      "generated": false,
+      "editable": true,
+      "notes": "Public claims and evidence classification; source presence alone is not deployment evidence."
+    },
+    {
+      "id": "product_information_architecture",
+      "category": "product-positioning",
+      "status": "pending",
+      "owner": "canonical-docs product positioning",
+      "source": "canonical-cloud/canonical-docs:docs/market-positioning.md",
+      "generated": false,
+      "editable": true,
+      "decision": "brand_domain_origin_topology"
+    },
+    {
+      "id": "engagement_legal_commercial_terms",
+      "category": "legal-commercial",
+      "status": "active",
+      "owner": "reviewed/executed customer agreement",
+      "source": "external-executed-agreement",
+      "generated": false,
+      "editable": false,
+      "notes": "Signed engagement agreement controls engagement-specific scope, price and term; repository planning documents do not supersede it."
+    },
+    {
+      "id": "readiness_planning_prices",
+      "category": "commercial-planning",
+      "status": "active",
+      "owner": "canonical-docs readiness business-plan + admitted offering contract",
+      "source": "canonical-cloud/canonical-docs:docs/business-plan.md",
+      "generated": false,
+      "editable": true,
+      "notes": "Management planning values only; signed SOW remains engagement authority."
+    },
+    {
+      "id": "shared_message_contracts",
+      "category": "wire-contracts",
+      "status": "active",
+      "owner": "canonical-interfaces owning contract family",
+      "source": "canonical-cloud/canonical-interfaces",
+      "generated": false,
+      "editable": true,
+      "notes": "Legacy JSON-Schema-authored families coexist with independently authored TypeSpec + Draft 2020-12 JSON Schema peer-authority families."
+    },
+    {
+      "id": "http_rpc_routes",
+      "category": "routes",
+      "status": "active",
+      "owner": "canonical-interfaces route maps",
+      "source": "canonical-cloud/canonical-interfaces:route-maps",
+      "generated": false,
+      "editable": true,
+      "notes": "Operation key, method and canonical path authority; compatibility aliases require explicit route metadata/decision."
+    },
+    {
+      "id": "contract_ir",
+      "category": "contract-evidence",
+      "status": "active",
+      "owner": "TJSV admission output",
+      "source": "generated-from-admitted-peer-contracts",
+      "generated": true,
+      "editable": false,
+      "notes": "Read-only admitted common assertion surface; never a third authored authority."
+    },
+    {
+      "id": "generated_language_adapters",
+      "category": "generated-adapters",
+      "status": "active",
+      "owner": "owning admitted/legacy contract + generator",
+      "source": "canonical-cloud/canonical-interfaces:generated",
+      "generated": true,
+      "editable": false,
+      "notes": "Consumer projection only."
+    },
+    {
+      "id": "database_migrations",
+      "category": "persistence",
+      "status": "active",
+      "owner": "owning service/persistence declarative migration source",
+      "source": "service-or-orm-owned-migration",
+      "generated": false,
+      "editable": true,
+      "notes": "Reference SQL or generated wire types are not automatically deployable DDL."
+    },
+    {
+      "id": "customer_tenant_authorization",
+      "category": "authorization",
+      "status": "active",
+      "owner": "Shared Auth verified principal + customer API authorization policy",
+      "source": "customer-runtime-auth-policy",
+      "generated": false,
+      "editable": true,
+      "notes": "Body/query/path/header tenant identifiers are filters/assertions, never authority by themselves."
+    },
+    {
+      "id": "admin_authorization",
+      "category": "authorization",
+      "status": "prepared",
+      "owner": "isolated admin API policy",
+      "source": "admin-runtime-auth-policy",
+      "generated": false,
+      "editable": true,
+      "notes": "Admin repository/source preparation does not itself prove production deployment."
+    },
+    {
+      "id": "relational_writer_authority",
+      "category": "persistence-authority",
+      "status": "pending",
+      "owner": "one accepted writer per logical dataset/environment",
+      "source": "canonical-cloud/canonical-orm-core",
+      "generated": false,
+      "editable": true,
+      "decision": "supabase_neon_writer_fencing"
+    },
+    {
+      "id": "offline_sync_policy",
+      "category": "sync",
+      "status": "pending",
+      "owner": "server contract + canonical-sync/Opto Sync policy",
+      "source": "canonical-cloud/canonical-sync",
+      "generated": false,
+      "editable": true,
+      "decision": "offline_readiness_authority_matrix"
+    },
+    {
+      "id": "readiness_object_storage",
+      "category": "object-storage",
+      "status": "active",
+      "owner": "authenticated API publication policy + canonical-infra private R2 contract",
+      "source": "canonical-cloud/canonical-infra:r2",
+      "generated": false,
+      "editable": true,
+      "notes": "R2 locator/object existence is not tenant authorization or relational publication durability."
+    },
+    {
+      "id": "provider_edge_infrastructure",
+      "category": "provider-infra",
+      "status": "active",
+      "owner": "canonical-infra",
+      "source": "canonical-cloud/canonical-infra",
+      "generated": false,
+      "editable": true,
+      "notes": "Provider desired state must not silently redefine product/browser authority or wire semantics."
+    },
+    {
+      "id": "kubernetes_reconciliation",
+      "category": "deployment",
+      "status": "active",
+      "owner": "ORESoftware/k8s-cluster + Argo CD",
+      "source": "ORESoftware/k8s-cluster",
+      "generated": false,
+      "editable": true,
+      "notes": "canonical-infra must not create a second Kubernetes reconciler."
+    },
+    {
+      "id": "release_composition",
+      "category": "release",
+      "status": "active",
+      "owner": "canonical-monorepo exact gitlinks/release manifest",
+      "source": "canonical-cloud/canonical-monorepo",
+      "generated": false,
+      "editable": true,
+      "notes": "Superproject pins child revisions; it does not copy child source or become child contract authority."
+    },
+    {
+      "id": "engineering_governance",
+      "category": "governance",
+      "status": "active",
+      "owner": "canonical-cloud/.github",
+      "source": "canonical-cloud/.github",
+      "generated": false,
+      "editable": true,
+      "notes": "Governance routes ownership and exceptions; it is not wire, database, legal, price or deployment authority."
+    },
+    {
+      "id": "production_operating_evidence",
+      "category": "operating-evidence",
+      "status": "active",
+      "owner": "exact deployed artifact/environment runtime evidence",
+      "source": "deployment-ci-observability-records",
+      "generated": false,
+      "editable": false,
+      "notes": "Repository presence or an unrelated green workflow is not production deployment evidence."
+    }
+  ],
+  "decisions": [
+    {
+      "id": "brand_domain_origin_topology",
+      "status": "pending",
+      "issues": [
+        "canonical-cloud/canonical-docs#27"
+      ]
+    },
+    {
+      "id": "readiness_route_aliases",
+      "status": "pending",
+      "issues": [
+        "canonical-cloud/canonical-interfaces#74",
+        "canonical-cloud/canonical-interfaces#76"
+      ]
+    },
+    {
+      "id": "supabase_neon_writer_fencing",
+      "status": "pending",
+      "issues": [
+        "canonical-cloud/canonical-orm-core#9"
+      ]
+    },
+    {
+      "id": "offline_readiness_authority_matrix",
+      "status": "pending",
+      "issues": [
+        "canonical-cloud/canonical-sync#6"
+      ]
+    },
+    {
+      "id": "lib_core_migration",
+      "status": "pending",
+      "issues": [
+        "canonical-cloud/canonical-lib-core#15"
+      ]
+    },
+    {
+      "id": "public_marketing_surface_role",
+      "status": "pending",
+      "issues": [
+        "canonical-cloud/canonical-marketing-site.web#73",
+        "canonical-cloud/canonical-cloud.github.io#8"
+      ]
+    },
+    {
+      "id": "customer_mcp_boundary",
+      "status": "pending",
+      "issues": [
+        "canonical-cloud/canonical-mcp-server.rs#73"
+      ]
+    }
+  ],
+  "invariants": [
+    "generated_artifacts_are_not_editable_authority",
+    "source_presence_is_not_deployment_evidence",
+    "tenant_identifiers_are_not_authorization_by_themselves",
+    "one_logical_dataset_has_one_accepted_writer_at_a_time",
+    "customer_plane_does_not_inherit_admin_authority",
+    "public_static_surfaces_do_not_own_private_customer_evidence",
+    "compatibility_aliases_require_explicit_owner_and_lifecycle",
+    "kubernetes_has_one_reconciliation_authority",
+    "signed_engagement_terms_override_planning_catalogs_for_that_engagement"
+  ]
+}
