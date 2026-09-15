@@ -82,7 +82,9 @@ jobs:
 
                   if ref.startswith('actions/checkout@'):
                       window = '\n'.join(lines[number:number + 8])
-                      if not re.search(r'(?m)^\s+persist-credentials:\s*false\s*(?:#.*)?$', window):
+                      block_safe = re.search(r'(?m)^\s+persist-credentials:\s*false\s*(?:#.*)?$', window)
+                      inline_safe = re.search(r'with:\s*\{[^}]*persist-credentials:\s*false(?:\s*,|\s*\})', window)
+                      if not (block_safe or inline_safe):
                           errors.append(f"{path}:{number}: actions/checkout must set persist-credentials: false")
 
               # Every runner-backed job should be bounded so stuck tooling cannot
