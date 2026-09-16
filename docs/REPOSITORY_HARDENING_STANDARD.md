@@ -112,6 +112,10 @@ Where relevant:
 - distinguish an Actions job that ran and failed from a job that never started due to account/billing/spending limits;
 - never lower security gates solely to make CI green.
 
+Production and security-sensitive repositories additionally require an explicit protected-change mechanism on the default branch: a GitHub repository/organization ruleset or classic branch protection must require the applicable review and status-check policy, and force-push/deletion exceptions must be documented and narrowly scoped. If the connected audit identity cannot read a protection endpoint because of GitHub App permissions, plan limitations, or repository visibility, record the result as `unknown`/evidence-gap rather than inferring that protection is disabled.
+
+The organization self-audit should also maintain a fleet matrix for Dependabot/dependency review, code scanning, secret scanning/push protection, private vulnerability reporting, deployment environments, OIDC/workload identity, and third-party GitHub App/deploy-key exposure where the available account APIs permit collection.
+
 ## 9. Testing layers
 
 Repositories should use the smallest sufficient combination of:
