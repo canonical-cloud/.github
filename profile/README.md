@@ -31,7 +31,7 @@ GitHub owns code and delivery evidence; Linear owns planning and dependencies. T
 
 - Canonical Linear project: https://linear.app/denman/project/githubcomcanonical-cloud-1659c8ea1adf
 - Organization defaults: https://github.com/canonical-cloud/.github
-- Canonical agent policy: https://github.com/canonical-cloud/.github/blob/main/agents.md
+- Canonical agent policy: https://github.com/canonical-cloud/.github/blob/main/AGENTS.md
 - Security policy: https://github.com/canonical-cloud/.github/security/policy
 
 Repositories in this organization use semantic conflict resolution with 3–10 relevant prior commits when useful, full cross-repository context, pull-request delivery, and a hard automated-agent denylist for destructive or history-rewriting operations.

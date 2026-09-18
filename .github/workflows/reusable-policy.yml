@@ -15,15 +15,49 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - name: Require lowercase agent policy
+      - name: Require agent safety policy
         shell: bash
         run: |
-          test -f agents.md
-          grep -Fq "avoid git rebase in favor of git merge" agents.md
-          grep -Fq "git stash" agents.md
-          grep -Fq "git reset" agents.md
-          grep -Fq "git clean" agents.md
-          grep -Fq "git filter-repo" agents.md
+          set -euo pipefail
+          # AGENTS.md is canonical; legacy lowercase agents.md is still accepted
+          # so repositories that have not migrated keep passing. If both
+          # spellings are tracked they must be identical, because they collide
+          # on case-insensitive checkouts.
+          policy=""
+          if test -f AGENTS.md; then policy=AGENTS.md; elif test -f agents.md; then policy=agents.md; fi
+          test -n "$policy" || { echo "::error::AGENTS.md is missing"; exit 1; }
+          if test -f AGENTS.md && test -f agents.md && ! cmp -s AGENTS.md agents.md; then
+            echo "::error::AGENTS.md and agents.md are both tracked with different content"; exit 1
+          fi
+
+          # Repositories may phrase the organization safety rules differently.
+          # Validate the durable safety concepts instead of one exact English
+          # sentence, so mature repository-local policies do not fail solely
+          # because their wording is more specific than the organization file.
+          python3 - "$policy" <<'PY'
+          from pathlib import Path
+          import re
+          import sys
+
+          text = Path(sys.argv[1]).read_text(encoding="utf-8").lower()
+          checks = {
+              "shared-history guidance mentions rebase and merge/pull":
+                  "git rebase" in text and ("git merge" in text or "git pull" in text),
+              "stash behavior is governed": "git stash" in text,
+              "reset behavior is governed": "git reset" in text,
+              "clean behavior is governed": "git clean" in text,
+              "force-push behavior is governed": bool(
+                  re.search(r"git\s+push\s+--force(?:-with-lease)?|force[- ]push", text)
+              ),
+              "worktree behavior is governed": "worktree" in text,
+          }
+          missing = [label for label, ok in checks.items() if not ok]
+          if missing:
+              raise SystemExit(
+                  "AGENTS policy is missing required safety concepts:\n- "
+                  + "\n- ".join(missing)
+              )
+          PY
       - name: Reject unresolved conflict markers
         shell: bash
         run: |
@@ -31,14 +65,32 @@ jobs:
             echo "Unresolved conflict marker detected" >&2
             exit 1
           fi
-      - name: Require immutable external Action pins
+      - name: Enforce workflow supply-chain and privilege baseline
         shell: python
         run: |
           from pathlib import Path
           import re
-          bad = []
-          for path in Path('.github/workflows').glob('*.y*ml'):
-              for number, line in enumerate(path.read_text(encoding='utf-8').splitlines(), 1):
+
+          errors = []
+          workflow_dir = Path('.github/workflows')
+          workflows = sorted([*workflow_dir.glob('*.yml'), *workflow_dir.glob('*.yaml')])
+
+          for path in workflows:
+              text = path.read_text(encoding='utf-8')
+              lines = text.splitlines()
+
+              if not re.search(r'(?m)^permissions:\s*(?:$|\{)', text):
+                  errors.append(f"{path}: missing explicit top-level permissions")
+              if re.search(r'(?m)^permissions:\s*write-all\s*$', text):
+                  errors.append(f"{path}: permissions: write-all is forbidden")
+              if re.search(r'(?m)^\s*pull_request_target:\s*$', text):
+                  errors.append(f"{path}: pull_request_target is forbidden by the baseline; use pull_request or document an approved exception outside CI")
+              if re.search(r'(?m)^\s*secrets:\s*inherit\s*$', text):
+                  errors.append(f"{path}: secrets: inherit is forbidden; pass only named secrets")
+              if re.search(r'(?i)(?:curl|wget)[^\n|]*\|\s*(?:sh|bash)\b', text):
+                  errors.append(f"{path}: network-to-shell execution is forbidden")
+
+              for number, line in enumerate(lines, 1):
                   match = re.search(r'^\s*(?:-\s+)?uses:\s*([^\s#]+)', line)
                   if not match:
                       continue
@@ -47,9 +99,26 @@ jobs:
                       continue
                   if ref.startswith('docker://'):
                       if not re.search(r'@sha256:[0-9a-fA-F]{64}$', ref):
-                          bad.append(f"{path}:{number}: {ref}")
+                          errors.append(f"{path}:{number}: docker action must use sha256 digest: {ref}")
                       continue
                   if not re.search(r'@[0-9a-fA-F]{40}$', ref):
-                      bad.append(f"{path}:{number}: {ref}")
-          if bad:
-              raise SystemExit("External Actions must use full commit SHAs:\n" + "\n".join(bad))
+                      errors.append(f"{path}:{number}: external Action must use full commit SHA: {ref}")
+
+                  if ref.startswith('actions/checkout@'):
+                      window = '\n'.join(lines[number:number + 8])
+                      block_safe = re.search(r'(?m)^\s+persist-credentials:\s*false\s*(?:#.*)?$', window)
+                      inline_safe = re.search(r'with:\s*\{[^}]*persist-credentials:\s*false(?:\s*,|\s*\})', window)
+                      if not (block_safe or inline_safe):
+                          errors.append(f"{path}:{number}: actions/checkout must set persist-credentials: false")
+
+              # Every runner-backed job should be bounded so stuck tooling cannot
+              # consume an unbounded runner allocation. Reusable-workflow jobs
+              # have `uses:` instead of `runs-on:` and are checked by their owner.
+              for match in re.finditer(r'(?m)^  ([A-Za-z0-9_-]+):\n(?P<body>(?:    .*\n|\n)*)', text):
+                  job_name = match.group(1)
+                  body = match.group('body')
+                  if re.search(r'(?m)^    runs-on:', body) and not re.search(r'(?m)^    timeout-minutes:\s*[1-9][0-9]*\s*(?:#.*)?$', body):
+                      errors.append(f"{path}: job {job_name!r} has runs-on but no positive timeout-minutes")
+
+          if errors:
+              raise SystemExit("Workflow security baseline violations:\n" + "\n".join(errors))
