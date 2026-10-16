@@ -17,7 +17,7 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
-      - name: Exercise 40 trusted/untrusted review evidence fixtures
+      - name: Exercise 45 trusted/untrusted review evidence fixtures
         run: python3 scripts/verify_taxonomy_review.py --self-test
       - name: Ensure production CLI is disabled
         shell: bash
