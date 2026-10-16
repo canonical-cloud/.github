@@ -1,0 +1,31 @@
+name: independent-taxonomy-app-prototype
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  offline-app-evaluator-tests:
+    name: offline-app-evaluator-tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - name: Check out prototype, without storing credentials
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Test independently deployed gate using mocked API data
+        run: python3 -m unittest discover -s tests -p 'test_independent_taxonomy_gate.py' -v
+      - name: Production evaluator must remain disabled by default
+        shell: bash
+        run: |
+          set -euo pipefail
+          if python3 scripts/independent_taxonomy_gate.py --evaluate canonical-cloud/.github 7 > "$RUNNER_TEMP/disabled-gate.log" 2>&1; then
+            echo "::error::independent App gate ran without an administrator installation"
+            exit 1
+          fi
+          grep -F "disabled until independently protected GitHub App is installed" "$RUNNER_TEMP/disabled-gate.log"
