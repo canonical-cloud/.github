@@ -51,6 +51,7 @@ class FakeGitHub:
         self.schema = copy.deepcopy(SCHEMA)
         self.registry = baseline()
         self.workflow_sha = WORKFLOW_BLOB
+        self.repo_private = False
         self.deleted = set()
         self.published = []
         self.override_review_pages = {}
@@ -76,6 +77,8 @@ class FakeGitHub:
         }
 
     def get(self, path):
+        if path == "/repos/canonical-cloud/.github":
+            return {"private": self.repo_private}
         if path == "/repos/canonical-cloud/.github/pulls/7":
             return copy.deepcopy(self.pr)
         if path in self.api_extra:
@@ -143,7 +146,7 @@ class GateTests(unittest.TestCase):
         self.gh.registry["repositories"][0]["review_evidence"] = {
             "url": "https://github.com/canonical-cloud/.github/pull/2",
             "reviewed_by": "fake", "reviewed_at": "2026-10-01T00:00:00Z"}
-        with self.assertRaisesRegex(AdmissionError, "trusted approver"):
+        with self.assertRaisesRegex(AdmissionError, "independent infrastructure"):
             evaluate(self.gh, REPO, 7, SCHEMA, frozenset())
 
     def test_bad_review_url_fails(self):
@@ -152,7 +155,7 @@ class GateTests(unittest.TestCase):
             "url": "https://github.com/other/.github/pull/3",
             "reviewed_by": "fake", "reviewed_at": "2026-10-01T00:00:00Z"}
         with self.assertRaisesRegex(AdmissionError, "reference"):
-            evaluate(self.gh, REPO, 7, SCHEMA, frozenset({123}))
+            validate_evidence(self.gh, REPO, self.gh.registry["repositories"][0], frozenset({123}))
 
     def test_foreign_repository_disallowed(self):
         with self.assertRaises(AdmissionError):
@@ -166,6 +169,25 @@ class GateTests(unittest.TestCase):
         self.gh.pr["base"]["ref"] = "feature"
         with self.assertRaisesRegex(AdmissionError, "main"):
             evaluate(self.gh, REPO, 7, SCHEMA, frozenset())
+
+    def test_repository_visibility_changed_fails(self):
+        self.gh.repo_private = True
+        with self.assertRaisesRegex(AdmissionError, "visibility"):
+            evaluate(self.gh, REPO, 7, SCHEMA, frozenset())
+
+    def test_missing_visibility_metadata_fails(self):
+        old = self.gh.get
+        self.gh.get = lambda path: {} if path == "/repos/canonical-cloud/.github" else old(path)
+        with self.assertRaisesRegex(AdmissionError, "visibility"):
+            evaluate(self.gh, REPO, 7, SCHEMA, frozenset())
+
+    def test_reviewed_promotion_stays_disabled_even_with_allowlist(self):
+        self.gh.registry["repositories"][0]["review_status"] = "reviewed"
+        self.gh.registry["repositories"][0]["review_evidence"] = {
+            "url": "https://github.com/canonical-cloud/.github/pull/2",
+            "reviewed_by": "approved-person", "reviewed_at": "2026-10-01T00:00:00Z"}
+        with self.assertRaisesRegex(AdmissionError, "independent infrastructure"):
+            evaluate(self.gh, REPO, 7, SCHEMA, frozenset({30}))
 
     def test_other_target_repository_fails(self):
         self.gh.pr["base"]["repo"]["full_name"] = "shared-auth/.github"
