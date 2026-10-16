@@ -11,6 +11,7 @@ Never run untrusted repository scripts, checkout commands or dependencies.
 import argparse
 import base64
 import copy
+import hashlib
 import json
 import os
 import re
@@ -24,6 +25,10 @@ from scripts.verify_taxonomy_review import verify_reviewed_row, ReviewDenied
 
 CHECK_NAME = "taxonomy-independent-gate"
 WORKFLOW_BLOB = "9f8aed7672bf9e5021a61f8424268a550f738000"
+SCHEMA_BLOB = "d2ec393f368d17793c6812b4867d3fedb50ef578"
+PRIVATE_ORGS = frozenset({"beamscale", "ores-data-platform"})
+# Hard stop: evidence-backed promotions require separate security-reviewed deployment.
+ALLOW_REVIEWED_PROMOTIONS = False
 ALLOWED_ORGS = frozenset({
     "canonical-cloud", "fiducia-cloud", "shared-auth", "beamscale",
     "ores-data-platform", "ores-chat", "3FA-app", "messaging-intel",
@@ -229,6 +234,10 @@ def evaluate(client, repo, pr_number, trusted_schema, reviewer_ids, *,
     if not isinstance(pr, dict) or not isinstance(pr.get("head"), dict):
         reject("missing latest PR metadata")
     head = require_sha(pr["head"].get("sha"))
+    metadata = client.get(f"/repos/{owner}/{name}")
+    if (not isinstance(metadata, dict) or type(metadata.get("private")) is not bool
+            or metadata["private"] != (owner in PRIVATE_ORGS)):
+        reject("repository visibility no longer matches approved inventory")
     if (not isinstance(pr.get("base"), dict) or pr["base"].get("ref") != "main"
             or not isinstance(pr["base"].get("repo"), dict)
             or pr["base"]["repo"].get("full_name") != repo):
@@ -246,6 +255,8 @@ def evaluate(client, repo, pr_number, trusted_schema, reviewer_ids, *,
         reject("invalid repository registry")
     reviewed = [row for row in registry["repositories"]
                 if isinstance(row, dict) and row.get("review_status") == "reviewed"]
+    if reviewed and not ALLOW_REVIEWED_PROMOTIONS:
+        reject("reviewed promotions remain disabled pending independent infrastructure attestation")
     if reviewed and not reviewer_ids:
         reject("reviewed promotions disabled: trusted approver IDs unavailable")
     for row in reviewed:
@@ -254,8 +265,7 @@ def evaluate(client, repo, pr_number, trusted_schema, reviewer_ids, *,
     # were checked for EVERY reviewed row by this protected evaluator.
     try:
         count = validate_taxonomy(
-            registry, expected, owner, public_repo=(owner not in {
-                "beamscale", "ores-data-platform"}),
+            registry, expected, owner, public_repo=(owner not in PRIVATE_ORGS),
             _fixture_review_authorization=True)
     except (PolicyError, ValueError, TypeError, KeyError) as exc:
         reject(f"taxonomy policy rejected: {exc}")
@@ -300,7 +310,14 @@ def main():
         if not schema_file:
             reject("trusted schema source missing")
         from pathlib import Path
-        schema = strict_json(Path(schema_file).read_bytes())
+        trusted_path = Path(schema_file)
+        if not trusted_path.is_absolute() or trusted_path.is_symlink() or not trusted_path.is_file():
+            reject("trusted schema must be a regular, administrator-owned absolute file")
+        schema_bytes = trusted_path.read_bytes()
+        blob = hashlib.sha1(b"blob " + str(len(schema_bytes)).encode("ascii") + b"\0" + schema_bytes).hexdigest()
+        if blob != SCHEMA_BLOB:
+            reject("trusted schema does not match independently pinned blob")
+        schema = strict_json(schema_bytes)
         client = GitHubClient(token)
         successful = process(client, repo, n, schema, reviewer_ids)
         sys.exit(0 if successful else 1)
