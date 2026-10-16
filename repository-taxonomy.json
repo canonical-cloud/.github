@@ -27,7 +27,8 @@
       },
       "database_scope": "none",
       "lifecycle": "unverified",
-      "review_status": "inferred-needs-review"
+      "review_status": "inferred-needs-review",
+      "visibility": "public"
     },
     {
       "repository": "canonical-cloud/canonical-api-server.rs",
@@ -47,7 +48,8 @@
       },
       "database_scope": "unverified",
       "lifecycle": "unverified",
-      "review_status": "inferred-needs-review"
+      "review_status": "inferred-needs-review",
+      "visibility": "public"
     },
     {
       "repository": "canonical-cloud/canonical-cloud.github.io",
@@ -67,7 +69,8 @@
       },
       "database_scope": "none",
       "lifecycle": "unverified",
-      "review_status": "inferred-needs-review"
+      "review_status": "inferred-needs-review",
+      "visibility": "public"
     },
     {
       "repository": "canonical-cloud/canonical-company-auditor.rs",
@@ -87,7 +90,8 @@
       },
       "database_scope": "unverified",
       "lifecycle": "unverified",
-      "review_status": "inferred-needs-review"
+      "review_status": "inferred-needs-review",
+      "visibility": "public"
     },
     {
       "repository": "canonical-cloud/canonical-interfaces",
@@ -107,7 +111,8 @@
       },
       "database_scope": "none",
       "lifecycle": "unverified",
-      "review_status": "inferred-needs-review"
+      "review_status": "inferred-needs-review",
+      "visibility": "public"
     },
     {
       "repository": "canonical-cloud/canonical-lib",
@@ -127,7 +132,8 @@
       },
       "database_scope": "unverified",
       "lifecycle": "unverified",
-      "review_status": "inferred-needs-review"
+      "review_status": "inferred-needs-review",
+      "visibility": "public"
     },
     {
       "repository": "canonical-cloud/canonical-marketing-site.web",
@@ -147,7 +153,8 @@
       },
       "database_scope": "none",
       "lifecycle": "unverified",
-      "review_status": "inferred-needs-review"
+      "review_status": "inferred-needs-review",
+      "visibility": "public"
     },
     {
       "repository": "canonical-cloud/canonical-mcp-server.rs",
@@ -167,7 +174,8 @@
       },
       "database_scope": "unverified",
       "lifecycle": "unverified",
-      "review_status": "inferred-needs-review"
+      "review_status": "inferred-needs-review",
+      "visibility": "public"
     },
     {
       "repository": "canonical-cloud/canonical-monorepo",
@@ -187,7 +195,8 @@
       },
       "database_scope": "unverified",
       "lifecycle": "unverified",
-      "review_status": "inferred-needs-review"
+      "review_status": "inferred-needs-review",
+      "visibility": "public"
     },
     {
       "repository": "canonical-cloud/canonical-pub-lib-core",
@@ -207,7 +216,8 @@
       },
       "database_scope": "unverified",
       "lifecycle": "unverified",
-      "review_status": "inferred-needs-review"
+      "review_status": "inferred-needs-review",
+      "visibility": "public"
     },
     {
       "repository": "canonical-cloud/canonical-web-server.rs",
@@ -227,7 +237,8 @@
       },
       "database_scope": "unverified",
       "lifecycle": "unverified",
-      "review_status": "inferred-needs-review"
+      "review_status": "inferred-needs-review",
+      "visibility": "public"
     },
     {
       "repository": "canonical-cloud/canonical.cloud",
@@ -247,7 +258,8 @@
       },
       "database_scope": "unverified",
       "lifecycle": "superseded",
-      "review_status": "inferred-needs-review"
+      "review_status": "inferred-needs-review",
+      "visibility": "public"
     }
   ]
 }
