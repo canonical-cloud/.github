@@ -87,7 +87,7 @@ class FakeGitHub:
                 raise AdmissionError("content ref not immutable PR head")
             return self._contents(local)
         if "/reviews?" in path:
-            n = int(path.split("page=")[1])
+            n = int(path.rsplit("&page=", 1)[1])
             return copy.deepcopy(self.override_review_pages.get(n, []))
         raise AdmissionError("unexpected GitHub API route " + path)
 
