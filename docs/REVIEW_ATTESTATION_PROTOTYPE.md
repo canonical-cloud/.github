@@ -1,24 +1,30 @@
-# Review attestation prototype (NOT an authorization gate)
+# Review attestation prototype — NOT an authorization gate
 
-This branch stages an offline-tested, **pure policy predicate** for independently verifying that a specific repository-taxonomy record is the exact content approved in a merged GitHub PR.
+This branch implements a **pure, offline-testable policy predicate** for a future independently governed GitHub approval gate. It does not fetch GitHub records and it cannot turn on any privileged repository-taxonomy classification.
 
-## Required trusted inputs
+## Two-phase, exact-head approval design
 
-- The governance-repository PR object and review history must come from GitHub's authenticated API, fetched by an independently governed check.
-- The approved repository-taxonomy row must be read at the **approved PR head commit SHA** from GitHub, not copied from the PR submitting a claim.
-- `repo_full_name` and the allowed reviewer identities must come from an independently protected source of truth—not from the candidate repository manifest, PR labels, or PR-controlled workflow files.
-- A reviewer cannot be the PR author; the latest review must be `APPROVED` at the exact PR head SHA; its timestamp must match the claim. The evidence PR must target `main`, be merged, belong to the expected governance repository, and contain **exactly the claimed row**.
+A separate governance PR proposes the **precise intended reviewed policy record**, stored at a reviewed proposal path such as `review-proposals/example-admin-api-server.json`. That proposal must **exclude** `review_evidence`, because the actual review timestamp is not known until the reviewer approves it. After the proposal PR merges, the candidate registry record may attach `review_evidence` without altering any of the approved substantive fields.
 
-## What this does not do
+The independently protected evaluator, not the candidate, must retrieve:
 
-This prototype does not call GitHub, does not carry a production approval allowlist, and **cannot authorize any reviewed records**. Its only CLI entry point is `--self-test`, which uses synthetic mocked API responses. The installed production taxonomy verifier continues to fail closed for every `review_status: reviewed` entry.
+- The proposed record blob and its origin (governance repo, fixed proposal path, and **final PR head commit SHA**) from authenticated GitHub APIs.
+- The canonical merged PR object, **complete paginated review history**, and the final revision SHA.
+- An independently protected **allowlist of stable numeric GitHub user IDs** (not mutable account logins). A trusted reviewer must differ from the PR author by stable ID.
+- Verified IaC/identity/database evidence for deployment and access claims. This prototype checks review provenance only; it **does not** validate infrastructure facts.
 
-A separately configured GitHub App, ruleset workflow, or equally independent trusted execution boundary must fetch the real PR and review evidence. Install review authorization and reviewer/branch protections first. The prototype may then be integrated after independent security review and real end-to-end acceptance tests.
+The predicate rejects a claim unless the proposed record exactly equals the candidate with only `review_evidence` removed. It requires a merged governance PR targeting `main`, the correct GitHub URL, reviewer ID in the protected allowlist, current `APPROVED` review from that reviewer on the exact final head SHA, a matching timestamp, and complete evidence. When review timestamps are equal, GitHub review IDs break ties deterministically; later dismissals/changes requests reject the claim.
 
-Critically, a self-modifiable `pull_request` workflow with a passing check is not a required independent security gate. Do not treat this prototype's success as permission to merge the ten pilot PRs or promote privileged access.
+A boolean indicating review-history completeness is **not itself proof**: only a trusted API caller can provide it after fetching all pages. Similarly, the proposal-origin mapping cannot be trusted if supplied by the PR author.
 
-## Tests
+## Production remains fail closed
 
-`python3 scripts/verify_taxonomy_review.py --self-test`
+The module CLI exposes **only** `--self-test`; invoking it without that flag must fail. The production repository-taxonomy verifier continues to reject every `review_status: reviewed` claim until the protected evaluator and administrator-owned reviewer authorization are installed and independently audited. This branch must not be used as a required check or a source of authorization.
 
-Tests reject forged timestamps and URLs, unmerged or cross-repository PRs, self-approval, stale or dismissed approvals, changed approved content, and unauthorized reviewer identities. CI runs the tests without network access or secrets.
+The local test workflow executes candidate-branch code for development feedback; because the PR author can modify that code, **passing its tests is not independent enforcement**.
+
+## Verification
+
+Run `python3 scripts/verify_taxonomy_review.py --self-test` to exercise the 40 positive and negative fixtures, including stable-ID spoofing, self-review, reordered/dismissed reviews, duplicated review IDs, missing evidence pages, mismatched proposal origins and contents, and forged timestamps. CI additionally verifies that the production command without `--self-test` exits unsuccessfully.
+
+See [INDEPENDENT_TAXONOMY_GATE_RUNBOOK.md](./INDEPENDENT_TAXONOMY_GATE_RUNBOOK.md) for the administrator-owned deployment and adversarial acceptance steps.
