@@ -24,7 +24,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if python3 scripts/independent_taxonomy_gate.py --evaluate canonical-cloud/.github 7 > "$RUNNER_TEMP/disabled-gate.log" 2>&1; then
+          if python3 -m scripts.independent_taxonomy_gate --evaluate canonical-cloud/.github 7 > "$RUNNER_TEMP/disabled-gate.log" 2>&1; then
             echo "::error::independent App gate ran without an administrator installation"
             exit 1
           fi
