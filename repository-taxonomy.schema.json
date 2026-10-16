@@ -33,7 +33,7 @@
       ],
       "properties": {
         "approval_required": {
-          "const": true
+          "const": false
         },
         "unverified_fields_grant_no_access": {
           "const": true
