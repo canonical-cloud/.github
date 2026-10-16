@@ -13,7 +13,7 @@ The independently protected evaluator, not the candidate, must retrieve:
 - An independently protected **allowlist of stable numeric GitHub user IDs** (not mutable account logins). A trusted reviewer must differ from the PR author by stable ID.
 - Verified IaC/identity/database evidence for deployment and access claims. This prototype checks review provenance only; it **does not** validate infrastructure facts.
 
-The predicate rejects a claim unless the proposed record exactly equals the candidate with only `review_evidence` removed. It requires a merged governance PR targeting `main`, the correct GitHub URL, reviewer ID in the protected allowlist, current `APPROVED` review from that reviewer on the exact final head SHA, a matching timestamp, and complete evidence. When review timestamps are equal, GitHub review IDs break ties deterministically; later dismissals/changes requests reject the claim.
+The predicate rejects a claim unless the proposed record exactly equals the candidate with only `review_evidence` removed. It requires a merged governance PR targeting `main`, the correct GitHub URL, reviewer ID in the protected allowlist, current `APPROVED` review from that reviewer on the exact final head SHA, a matching timestamp, and complete evidence. When review timestamps are equal, GitHub review IDs break ties deterministically. **Every review from an allowed reviewer is grouped by stable numeric ID**, including events recorded under an older or newer username, and later dismissals/changes requests reject the claim. An outstanding changes request from another independently authorized reviewer also rejects the claim.
 
 A boolean indicating review-history completeness is **not itself proof**: only a trusted API caller can provide it after fetching all pages. Similarly, the proposal-origin mapping cannot be trusted if supplied by the PR author.
 
@@ -25,6 +25,6 @@ The local test workflow executes candidate-branch code for development feedback;
 
 ## Verification
 
-Run `python3 scripts/verify_taxonomy_review.py --self-test` to exercise the 40 positive and negative fixtures, including stable-ID spoofing, self-review, reordered/dismissed reviews, duplicated review IDs, missing evidence pages, mismatched proposal origins and contents, and forged timestamps. CI additionally verifies that the production command without `--self-test` exits unsuccessfully.
+Run `python3 scripts/verify_taxonomy_review.py --self-test` to exercise the 45 positive and negative fixtures, including stable-ID spoofing, self-review, reordered/dismissed reviews, duplicated review IDs, missing evidence pages, mismatched proposal origins and contents, and forged timestamps. CI additionally verifies that the production command without `--self-test` exits unsuccessfully.
 
 See [INDEPENDENT_TAXONOMY_GATE_RUNBOOK.md](./INDEPENDENT_TAXONOMY_GATE_RUNBOOK.md) for the administrator-owned deployment and adversarial acceptance steps.
