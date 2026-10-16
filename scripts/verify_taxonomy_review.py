@@ -252,7 +252,7 @@ def self_test():
     probe("another-authorized-reviewer-changes-requested", lambda r,p,h,a,s,t: (
         h.append({"id":101,"user":{"id":31,"login":"second-reviewer"},
                   "state":"CHANGES_REQUESTED","submitted_at":"2026-10-01T11:02:00Z",
-                  "commit_id":head})),{"allowlist":frozenset({30,31})})[1])
+                  "commit_id":head}),{"allowlist":frozenset({30,31})})[1])
     probe("multiple-IDs-claim-same-login", lambda r,p,h,a,s,t: (
         h.append({"id":101,"user":{"id":31,"login":"reviewer"},
                   "state":"APPROVED","submitted_at":when,"commit_id":head}),
