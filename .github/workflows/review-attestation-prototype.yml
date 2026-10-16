@@ -1,0 +1,21 @@
+name: review-attestation-prototype-tests
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  offline-attestation-tests:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - name: Check out prototype only; persist no credentials
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Exercise trusted/untrusted GitHub review evidence fixtures
+        run: python3 scripts/verify_taxonomy_review.py --self-test
