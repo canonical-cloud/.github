@@ -326,9 +326,6 @@ def self_test():
         attach(x, [approved("test-org/a-admin-api-server.rs", "admin-api", "vpc-a")]),
         x["repositories"][-1]["release_unit"].update(identifiers=[" "])))
 
-    expect("production-refuses-forged-approved-claim", lambda x: (
-        attach(x, [approved("test-org/a-admin-api-server.rs", "admin-api", "vpc-a")])
-    ), True)
     forged = copy.deepcopy(doc)
     attach(forged, [approved("test-org/a-admin-api-server.rs", "admin-api", "vpc-a")])
     try:
