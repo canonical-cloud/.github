@@ -17,5 +17,14 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
-      - name: Exercise trusted/untrusted GitHub review evidence fixtures
+      - name: Exercise 40 trusted/untrusted review evidence fixtures
         run: python3 scripts/verify_taxonomy_review.py --self-test
+      - name: Ensure production CLI is disabled
+        shell: bash
+        run: |
+          set -euo pipefail
+          if python3 scripts/verify_taxonomy_review.py > "$RUNNER_TEMP/attestation-cli.out" 2>&1; then
+            echo "::error::production CLI unexpectedly accepted untrusted inputs"
+            exit 1
+          fi
+          grep -F "PRODUCTION DENY" "$RUNNER_TEMP/attestation-cli.out" >/dev/null
