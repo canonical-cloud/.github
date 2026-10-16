@@ -115,7 +115,7 @@ def verify_reviewed_row(
     if merged_time < claim_time or claim_time > datetime.datetime.now(UTC) + datetime.timedelta(minutes=5):
         deny("approval timestamp outside merge/future bounds")
     seen_review_ids = set()
-    matching = []
+    events_by_reviewer_id = {}
     for review in reviews:
         if not isinstance(review, dict) or not isinstance(review.get("user"), dict):
             deny("invalid review history item")
@@ -129,13 +129,23 @@ def verify_reviewed_row(
         if submitted > merged_time + datetime.timedelta(minutes=5):
             deny("review history contains post-merge event")
         if user["id"] in trusted_reviewer_ids and user["id"] != author["id"]:
-            if user["login"].casefold() == claimed_login.casefold():
-                matching.append((submitted, review["id"], review))
-    if not matching:
-        deny("no independent allowed reviewer")
-    # ID disambiguates same-timestamp decisions; GitHub returns stable review IDs.
-    matching.sort(key=lambda event: (event[0], event[1]))
-    review_time, _, last = matching[-1]
+            events_by_reviewer_id.setdefault(user["id"], []).append(
+                (submitted, review["id"], review))
+    candidates = []
+    for user_id, events in events_by_reviewer_id.items():
+        # Process every review under the stable numeric ID, even if the account
+        # login changed between reviews. Review IDs resolve timestamp ties.
+        events.sort(key=lambda event: (event[0], event[1]))
+        last_time, _, last = events[-1]
+        if last.get("state") == "CHANGES_REQUESTED":
+            deny("authorized reviewer has outstanding changes request")
+        if last.get("state") == "DISMISSED":
+            deny("authorized reviewer has dismissed review")
+        if last["user"]["login"].casefold() == claimed_login.casefold():
+            candidates.append((user_id, last_time, last))
+    if len(candidates) != 1:
+        deny("claim cannot identify exactly one independent stable reviewer")
+    _, review_time, last = candidates[0]
     if last.get("state") != "APPROVED":
         deny("latest review by attester is no longer approved")
     if review_time != claim_time or last.get("commit_id") != head_sha:
@@ -230,6 +240,23 @@ def self_test():
         h[0].update(state="DISMISSED"),h.append({
             "id":101,"user":{"id":30,"login":"reviewer"},"state":"APPROVED",
             "submitted_at":when,"commit_id":head})), accepted=True)
+    probe("renamed-user-later-dismissal", lambda r,p,h,a,s,t: h.append({
+        "id":101,"user":{"id":30,"login":"new-login"},"state":"DISMISSED",
+        "submitted_at":"2026-10-01T11:01:00Z","commit_id":head}))
+    probe("renamed-user-later-changes-requested", lambda r,p,h,a,s,t: h.append({
+        "id":101,"user":{"id":30,"login":"new-login"},"state":"CHANGES_REQUESTED",
+        "submitted_at":"2026-10-01T11:01:00Z","commit_id":head}))
+    probe("previous-login-review-still-tracked", lambda r,p,h,a,s,t: h.insert(0,{
+        "id":99,"user":{"id":30,"login":"previous-login"},"state":"COMMENTED",
+        "submitted_at":"2026-10-01T10:59:00Z","commit_id":head}), accepted=True)
+    probe("another-authorized-reviewer-changes-requested", lambda r,p,h,a,s,t: (
+        h.append({"id":101,"user":{"id":31,"login":"second-reviewer"},
+                  "state":"CHANGES_REQUESTED","submitted_at":"2026-10-01T11:02:00Z",
+                  "commit_id":head})),{"allowlist":frozenset({30,31})})[1])
+    probe("multiple-IDs-claim-same-login", lambda r,p,h,a,s,t: (
+        h.append({"id":101,"user":{"id":31,"login":"reviewer"},
+                  "state":"APPROVED","submitted_at":when,"commit_id":head}),
+        {"allowlist":frozenset({30,31})})[1])
     probe("duplicate-review-ids", lambda r,p,h,a,s,t: h.append(copy.deepcopy(h[0])))
     probe("stale-approved-head", lambda r,p,h,a,s,t: h[0].update(commit_id="d"*40))
     probe("unknown-completeness", lambda r,p,h,a,s,t: {"complete":False})
