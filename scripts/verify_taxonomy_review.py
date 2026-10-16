@@ -1,182 +1,248 @@
 #!/usr/bin/env python3
-"""Pure review-admission predicate for future independently governed use.
+"""Offline review-attestation policy prototype. NOT a production authorization gate.
 
-SECURITY: This module deliberately has no 'accept this local JSON' CLI mode.
-A protected caller must retrieve PRs, reviews, and the approved registry blob
-from GitHub's authenticated API using a trusted installation identity. A
-candidate PR may supply only its request data, never the trusted approver set.
-The existing taxonomy CI keeps reviewed promotions disabled.
+A separately protected GitHub App/ruleset must fetch ALL trusted inputs.
+No CLI accepts candidate policy data or an approver allowlist. In production,
+the repository-taxonomy admission checker still DENIES every reviewed record.
 """
 import argparse
 import copy
 import datetime
-import json
 import re
+
+UTC = datetime.timezone.utc
+SHA = re.compile(r"[0-9a-f]{40}\Z")
+LOGIN = re.compile(r"[A-Za-z0-9-]+\Z")
+REPO = re.compile(r"[A-Za-z0-9_.-]+/\.github\Z")
+PROPOSAL = re.compile(r"review-proposals/[A-Za-z0-9_.-]+\.json\Z")
 
 
 class ReviewDenied(ValueError):
     pass
 
 
-SHA = re.compile(r"[0-9a-f]{40}\Z")
-LOGIN = re.compile(r"[A-Za-z0-9-]+\Z")
-
-
 def deny(message):
     raise ReviewDenied(message)
 
 
-def timestamp(value):
+def utc_time(value):
     if not isinstance(value, str):
-        deny("review timestamp is not a string")
+        deny("timestamp is not a string")
     try:
-        parsed = datetime.datetime.fromisoformat(value.replace("Z", "+00:00"))
-    except ValueError:
-        deny("malformed review timestamp")
-    if parsed.tzinfo is None or parsed.utcoffset() is None:
-        deny("review timestamp lacks timezone")
-    return parsed.astimezone(datetime.timezone.utc)
+        result = datetime.datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except (ValueError, OverflowError):
+        deny("invalid timestamp")
+    if result.tzinfo is None or result.utcoffset() is None:
+        deny("timestamp missing timezone")
+    return result.astimezone(UTC)
 
 
-def verify_reviewed_row(row, pr, reviews, approved_row, *, repo_full_name, trusted_reviewers):
-    """Require a reviewed and *merged* PR for exactly the approved row bytes.
+def positive_int(value):
+    return type(value) is int and value > 0
 
-    Trusted inputs: pr, reviews, and approved_row must be retrieved from
-    authenticated GitHub APIs, approved_row at pr.head.sha; repo_full_name and
-    trusted_reviewers must come from independently protected policy configuration.
-    Passing PR-authored substitutes for these inputs is unsafe.
+
+def verify_reviewed_row(
+    row, pr, reviews, approved_proposal, proposal_origin, *,
+    repo_full_name, trusted_reviewer_ids, review_history_complete,
+):
+    """Pure predicate on authenticated, complete GitHub API evidence.
+
+    The only candidate-authored input is 'row'. The remaining inputs MUST come
+    from a protected caller with an authenticated GitHub App and an independently
+    administered reviewer-ID allowlist; this function cannot establish provenance.
+
+    approved_proposal: exact proposed reviewed row *without* review_evidence,
+       stored as a separate approval proposal before review. The protected
+       caller retrieves its Git blob at PR head SHA, never from the claim.
+    proposal_origin: protected caller's authenticated repository/path/commit
+       information for that blob, not a claim supplied by the candidate PR.
     """
-    if not isinstance(trusted_reviewers, (frozenset, set)) or not trusted_reviewers:
-        deny("trusted approver allowlist unavailable")
-    if any(not isinstance(login, str) or not LOGIN.fullmatch(login) for login in trusted_reviewers):
-        deny("invalid trusted approver")
+    if not isinstance(repo_full_name, str) or not REPO.fullmatch(repo_full_name):
+        deny("invalid governance repository")
+    if type(review_history_complete) is not bool or not review_history_complete:
+        deny("review history not known complete")
+    if type(trusted_reviewer_ids) not in (set, frozenset) or not trusted_reviewer_ids:
+        deny("trusted stable reviewer IDs unavailable")
+    if not all(positive_int(x) for x in trusted_reviewer_ids):
+        deny("trusted IDs must be positive GitHub numeric user IDs")
     if not isinstance(row, dict) or row.get("review_status") != "reviewed":
-        deny("not a reviewed classification")
-    if not isinstance(approved_row, dict) or row != approved_row:
-        deny("record differs from approved head commit")
-    if not isinstance(repo_full_name, str) or not re.fullmatch(
-            r"[A-Za-z0-9_.-]+/\.github", repo_full_name):
-        deny("invalid expected governance repository")
-    if not isinstance(pr, dict) or not isinstance(reviews, list):
-        deny("GitHub evidence missing")
+        deny("candidate has no reviewed classification")
     evidence = row.get("review_evidence")
-    if not isinstance(evidence, dict):
-        deny("review evidence missing")
-    username = evidence.get("reviewed_by")
-    if not isinstance(username, str) or username not in trusted_reviewers:
-        deny("reviewer is not independently authorized")
+    if not isinstance(evidence, dict) or set(evidence) != {"url", "reviewed_by", "reviewed_at"}:
+        deny("malformed review evidence")
+    claimed_login = evidence["reviewed_by"]
+    if not isinstance(claimed_login, str) or not LOGIN.fullmatch(claimed_login):
+        deny("invalid claimed reviewer login")
+    if not isinstance(approved_proposal, dict) or "review_evidence" in approved_proposal:
+        deny("untrusted or malformed approval proposal")
+    if approved_proposal.get("review_status") != "reviewed":
+        deny("proposal must explicitly request reviewed classification")
+    without_evidence = {key: value for key, value in row.items() if key != "review_evidence"}
+    if without_evidence != approved_proposal:
+        deny("candidate differs from independently approved proposal")
+    if not isinstance(pr, dict) or not isinstance(reviews, list):
+        deny("authenticated PR or complete reviews unavailable")
     if pr.get("merged") is not True or pr.get("state") != "closed":
-        deny("evidence PR is not merged")
+        deny("approval PR is not merged")
+    if not positive_int(pr.get("number")):
+        deny("invalid PR number")
     base = pr.get("base")
-    if not isinstance(base, dict) or base.get("ref") != "main":
-        deny("review was not merged into protected main")
-    if not isinstance(base.get("repo"), dict) or base["repo"].get("full_name") != repo_full_name:
-        deny("evidence PR belongs to different governance repository")
+    if (not isinstance(base, dict) or base.get("ref") != "main"
+            or not isinstance(base.get("repo"), dict)
+            or base["repo"].get("full_name") != repo_full_name):
+        deny("approval PR not merged into expected main repository")
     head = pr.get("head")
     if not isinstance(head, dict):
-        deny("missing PR head")
+        deny("approval PR head missing")
     head_sha = head.get("sha")
     if not isinstance(head_sha, str) or not SHA.fullmatch(head_sha):
-        deny("invalid PR head sha")
-    if not isinstance(pr.get("user"), dict):
-        deny("missing PR author")
-    author = pr["user"].get("login")
-    if isinstance(author, str) and author.casefold() == username.casefold():
-        deny("author cannot attest their own change")
-    if not isinstance(pr.get("number"), int) or isinstance(pr["number"], bool) or pr["number"] < 1:
-        deny("invalid evidence PR number")
+        deny("invalid approved PR commit SHA")
+    if not isinstance(proposal_origin, dict) or set(proposal_origin) != {"repository", "commit_sha", "path"}:
+        deny("authenticated proposal origin missing")
+    if (proposal_origin["repository"] != repo_full_name or
+            proposal_origin["commit_sha"] != head_sha or
+            not isinstance(proposal_origin["path"], str) or
+            not PROPOSAL.fullmatch(proposal_origin["path"])):
+        deny("approval proposal not fetched at exact final PR head")
     canonical_url = f"https://github.com/{repo_full_name}/pull/{pr['number']}"
-    if evidence.get("url") != canonical_url or pr.get("html_url") != canonical_url:
-        deny("evidence URL does not identify this exact governance PR")
-    required_time = timestamp(evidence.get("reviewed_at"))
-    history = []
+    if evidence["url"] != canonical_url or pr.get("html_url") != canonical_url:
+        deny("claim points at incorrect PR URL")
+    author = pr.get("user")
+    if not isinstance(author, dict) or not positive_int(author.get("id")):
+        deny("PR author stable identity unavailable")
+    claim_time = utc_time(evidence["reviewed_at"])
+    merged_time = utc_time(pr.get("merged_at"))
+    if merged_time < claim_time or claim_time > datetime.datetime.now(UTC) + datetime.timedelta(minutes=5):
+        deny("approval timestamp outside merge/future bounds")
+    seen_review_ids = set()
+    matching = []
     for review in reviews:
         if not isinstance(review, dict) or not isinstance(review.get("user"), dict):
-            deny("malformed review history")
-        reviewer = review["user"].get("login")
-        if not isinstance(reviewer, str):
-            deny("malformed review author")
-        if reviewer.casefold() == username.casefold():
-            history.append((timestamp(review.get("submitted_at")), review))
-    if not history:
-        deny("independent reviewer did not review PR")
-    history.sort(key=lambda x: x[0])
-    last_time, last_review = history[-1]
-    if last_review.get("state") != "APPROVED":
-        deny("latest authorized review is not approved")
-    if last_time != required_time:
-        deny("claimed review timestamp mismatches GitHub")
-    if last_review.get("commit_id") != head_sha:
-        deny("approval was not granted for final PR head")
+            deny("invalid review history item")
+        user = review["user"]
+        if (not positive_int(review.get("id")) or review["id"] in seen_review_ids
+                or not positive_int(user.get("id"))
+                or not isinstance(user.get("login"), str)):
+            deny("ambiguous review ID or reviewer identity")
+        seen_review_ids.add(review["id"])
+        submitted = utc_time(review.get("submitted_at"))
+        if submitted > merged_time + datetime.timedelta(minutes=5):
+            deny("review history contains post-merge event")
+        if user["id"] in trusted_reviewer_ids and user["id"] != author["id"]:
+            if user["login"].casefold() == claimed_login.casefold():
+                matching.append((submitted, review["id"], review))
+    if not matching:
+        deny("no independent allowed reviewer")
+    # ID disambiguates same-timestamp decisions; GitHub returns stable review IDs.
+    matching.sort(key=lambda event: (event[0], event[1]))
+    review_time, _, last = matching[-1]
+    if last.get("state") != "APPROVED":
+        deny("latest review by attester is no longer approved")
+    if review_time != claim_time or last.get("commit_id") != head_sha:
+        deny("approval does not match claimed timestamp or exact final PR head")
     return True
 
 
 def self_test():
-    sha = "c" * 40
     repo = "test-org/.github"
+    head = "c" * 40
     url = f"https://github.com/{repo}/pull/17"
-    date = "2026-10-01T11:00:00Z"
-    row = {
+    when = "2026-10-01T11:00:00Z"
+    merged = "2026-10-01T12:00:00Z"
+    proposal = {
         "repository": "test-org/example-admin-api-server.rs",
-        "trust_domain": "admin-api",
-        "database_scope": "admin",
+        "trust_domain": "admin-api", "database_scope": "admin",
         "review_status": "reviewed",
-        "review_evidence": {"url": url, "reviewed_by": "reviewer", "reviewed_at": date},
     }
+    row = dict(proposal, review_evidence={
+        "url": url, "reviewed_by": "reviewer", "reviewed_at": when,
+    })
     pr = {
-        "number": 17, "state": "closed", "merged": True, "html_url": url,
-        "user": {"login": "author"},
+        "number": 17, "state": "closed", "merged": True,
+        "merged_at": merged, "html_url": url,
+        "user": {"id": 20, "login": "author"},
         "base": {"ref": "main", "repo": {"full_name": repo}},
-        "head": {"sha": sha},
+        "head": {"sha": head},
     }
-    reviews = [{
-        "user": {"login": "reviewer"}, "state": "APPROVED",
-        "commit_id": sha, "submitted_at": date,
-    }]
-    approved_row = copy.deepcopy(row)
-    approved = frozenset({"reviewer"})
-    count = 0
+    reviews = [{"id": 100, "user": {"id": 30, "login": "reviewer"},
+                "state": "APPROVED", "commit_id": head, "submitted_at": when}]
+    origin = {"repository": repo, "commit_sha": head,
+              "path": "review-proposals/example-admin-api-server.json"}
+    approvals = frozenset({30})
+    scenarios = []
 
-    def probe(name, mutate=None, allowed=False):
-        nonlocal count
-        obj = copy.deepcopy((row, pr, reviews, approved_row, approved))
-        entry, proposal, hist, approved_entry, reviewers = obj
+    def probe(name, mutate=None, accepted=False):
+        candidate, pr_obj, history, payload, source, allowed = copy.deepcopy(
+            (row, pr, reviews, proposal, origin, approvals))
+        complete = True
         if mutate:
-            altered = mutate(entry, proposal, hist, approved_entry, reviewers)
-            if altered is not None:
-                reviewers = altered
-        accepted = False
+            changes = mutate(candidate, pr_obj, history, payload, source, allowed)
+            if changes is not None:
+                if "allowlist" in changes:
+                    allowed = changes["allowlist"]
+                if "complete" in changes:
+                    complete = changes["complete"]
+        actual = False
         try:
-            accepted = verify_reviewed_row(
-                entry, proposal, hist, approved_entry, repo_full_name=repo,
-                trusted_reviewers=reviewers)
+            actual = verify_reviewed_row(
+                candidate, pr_obj, history, payload, source, repo_full_name=repo,
+                trusted_reviewer_ids=allowed, review_history_complete=complete)
         except ReviewDenied:
-            accepted = False
-        if accepted != allowed:
-            raise AssertionError(f"{name}: {'unauthorized acceptance' if accepted else 'false rejection'}")
-        count += 1
+            pass
+        if actual != accepted:
+            raise AssertionError(f"{name}: " + ("unjustified acceptance" if actual else "false rejection"))
+        scenarios.append(name)
 
-    probe("approved-matching-merged-pr", allowed=True)
-    probe("unmerged-pr", lambda r, p, h, a, t: p.update(merged=False))
-    probe("wrong-target-branch", lambda r, p, h, a, t: p["base"].update(ref="dev"))
-    probe("cross-repository-pr", lambda r, p, h, a, t: p["base"]["repo"].update(full_name="other/.github"))
-    probe("author-self-review", lambda r, p, h, a, t: p["user"].update(login="reviewer"))
-    probe("untrusted-reviewer", lambda r, p, h, a, t: frozenset({"someone-else"}))
-    probe("empty-trusted-allowlist", lambda r, p, h, a, t: frozenset())
-    probe("stale-head-review", lambda r, p, h, a, t: h[0].update(commit_id="d" * 40))
-    probe("dismissed-review", lambda r, p, h, a, t: h[0].update(state="DISMISSED"))
-    probe("newer-changes-requested", lambda r, p, h, a, t: h.append({
-        "user": {"login": "reviewer"}, "state": "CHANGES_REQUESTED",
-        "commit_id": sha, "submitted_at": "2026-10-01T12:00:00Z"}))
-    probe("record-mutated-after-approval", lambda r, p, h, a, t: r.update(database_scope="app"))
-    probe("forged-review-timestamp", lambda r, p, h, a, t: r["review_evidence"].update(reviewed_at="2026-10-01T12:00:00Z"))
-    probe("forged-url", lambda r, p, h, a, t: r["review_evidence"].update(url="https://github.com/test-org/.github/pull/18"))
-    probe("missing-approval", lambda r, p, h, a, t: h.clear())
-    probe("reviewed-state-not-set", lambda r, p, h, a, t: r.update(review_status="inferred-needs-review"))
-    probe("review-without-timezone", lambda r, p, h, a, t: r["review_evidence"].update(reviewed_at="2026-10-01T11:00:00"))
-    probe("malformed-pr-sha", lambda r, p, h, a, t: p["head"].update(sha="refs/heads/main"))
-    probe("same-reviewer-name-case", lambda r, p, h, a, t: p["user"].update(login="REVIEWER"))
-    print(f"review attestation prototype self-tests passed: {count}")
+    probe("valid-approved-proposal-plus-subsequent-evidence", accepted=True)
+    probe("PR-not-merged", lambda r,p,h,a,s,t: p.update(merged=False))
+    probe("PR-open", lambda r,p,h,a,s,t: p.update(state="open"))
+    probe("wrong-target-branch", lambda r,p,h,a,s,t: p["base"].update(ref="dev"))
+    probe("foreign-target-repo", lambda r,p,h,a,s,t: p["base"]["repo"].update(full_name="other/.github"))
+    probe("nonmatching-proposal", lambda r,p,h,a,s,t: a.update(database_scope="app"))
+    probe("proposal-has-self-referential-evidence", lambda r,p,h,a,s,t: a.update(review_evidence={}))
+    probe("proposal-not-actually-reviewed", lambda r,p,h,a,s,t: a.update(review_status="inferred-needs-review"))
+    probe("applicant-mutates-fields-after-approval", lambda r,p,h,a,s,t: r.update(database_scope="app"))
+    probe("wrong-proposal-commit", lambda r,p,h,a,s,t: s.update(commit_sha="d"*40))
+    probe("wrong-proposal-repo", lambda r,p,h,a,s,t: s.update(repository="other/.github"))
+    probe("proposal-path-traversal", lambda r,p,h,a,s,t: s.update(path="review-proposals/../secret.json"))
+    probe("proposal-is-live-registry", lambda r,p,h,a,s,t: s.update(path="repository-taxonomy.json"))
+    probe("wrong-evidence-url", lambda r,p,h,a,s,t: r["review_evidence"].update(url=url+"-other"))
+    probe("unmerged-no-timestamp", lambda r,p,h,a,s,t: p.pop("merged_at"))
+    probe("review-post-merger", lambda r,p,h,a,s,t: h[0].update(submitted_at="2026-10-02T13:00:00Z"))
+    probe("approval-timestamp-spoof", lambda r,p,h,a,s,t: r["review_evidence"].update(reviewed_at="2026-10-01T11:01:00Z"))
+    probe("timestamp-without-timezone", lambda r,p,h,a,s,t: r["review_evidence"].update(reviewed_at="2026-10-01T11:00:00"))
+    probe("unapproved-reviewer", lambda r,p,h,a,s,t: {"allowlist": frozenset({40})})
+    probe("no-trusted-reviewer", lambda r,p,h,a,s,t: {"allowlist": frozenset()})
+    probe("malformed-reviewer-id", lambda r,p,h,a,s,t: {"allowlist": frozenset({True})})
+    probe("username-reuse-with-different-user-id", lambda r,p,h,a,s,t: h[0]["user"].update(id=31))
+    probe("self-review-same-stable-id", lambda r,p,h,a,s,t: p["user"].update(id=30,login="different-name"))
+    probe("login-case-normalization", lambda r,p,h,a,s,t: h[0]["user"].update(login="REVIEWER"), accepted=True)
+    probe("review-later-dismissed", lambda r,p,h,a,s,t: h.append({
+        "id": 101,"user":{"id":30,"login":"reviewer"},"state":"DISMISSED",
+        "submitted_at":"2026-10-01T11:01:00Z","commit_id":head}))
+    probe("review-later-changes-requested", lambda r,p,h,a,s,t: h.append({
+        "id":101,"user":{"id":30,"login":"reviewer"},"state":"CHANGES_REQUESTED",
+        "submitted_at":"2026-10-01T11:01:00Z","commit_id":head}))
+    probe("same-timestamp-higher-id-dismissal", lambda r,p,h,a,s,t: h.append({
+        "id":101,"user":{"id":30,"login":"reviewer"},"state":"DISMISSED",
+        "submitted_at":when,"commit_id":head}))
+    probe("same-timestamp-higher-id-approval", lambda r,p,h,a,s,t: (
+        h[0].update(state="DISMISSED"),h.append({
+            "id":101,"user":{"id":30,"login":"reviewer"},"state":"APPROVED",
+            "submitted_at":when,"commit_id":head})), accepted=True)
+    probe("duplicate-review-ids", lambda r,p,h,a,s,t: h.append(copy.deepcopy(h[0])))
+    probe("stale-approved-head", lambda r,p,h,a,s,t: h[0].update(commit_id="d"*40))
+    probe("unknown-completeness", lambda r,p,h,a,s,t: {"complete":False})
+    probe("completeness-integer", lambda r,p,h,a,s,t: {"complete":1})
+    probe("missing-approval", lambda r,p,h,a,s,t: h.clear())
+    probe("candidate-not-reviewed", lambda r,p,h,a,s,t: r.update(review_status="inferred-needs-review"))
+    probe("bool-pr-number", lambda r,p,h,a,s,t: p.update(number=True))
+    probe("bool-author-id", lambda r,p,h,a,s,t: p["user"].update(id=True))
+    probe("wrong-claimed-login", lambda r,p,h,a,s,t: r["review_evidence"].update(reviewed_by="fake"))
+    probe("blank-claimed-login", lambda r,p,h,a,s,t: r["review_evidence"].update(reviewed_by=""))
+    probe("missing-approval-source", lambda r,p,h,a,s,t: s.clear())
+    probe("forged-merged-time-before-review", lambda r,p,h,a,s,t: p.update(merged_at="2026-10-01T10:00:00Z"))
+    print(f"review attestation prototype self-tests passed: {len(scenarios)}")
 
 
 if __name__ == "__main__":
@@ -184,5 +250,5 @@ if __name__ == "__main__":
     parser.add_argument("--self-test", action="store_true")
     args = parser.parse_args()
     if not args.self_test:
-        parser.error("production admission is DISABLED: protected API fetch and reviewer authorization required")
+        parser.error("PRODUCTION DENY: no independent GitHub API caller or protected reviewer-ID authority")
     self_test()
