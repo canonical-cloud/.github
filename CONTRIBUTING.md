@@ -1,5 +1,18 @@
 # Contributing
 
+## Rust-first scripts and automation
+
+**Use Rust for first-party scripts and automation; do not add or extend Python scripts.** This includes build/CI helpers, test infrastructure, code generation, database/schema migration tooling, deployment/release helpers, project administration, and ad-hoc repository maintenance. Prefer maintained Rust CLIs or `cargo xtask`; shell and YAML should be thin wrappers when the platform requires them.
+
+**Existing Python automation is migration debt.** Record each existing script and its callers, then replace with Rust while retaining arguments, exit behavior, data formats, error paths, security checks, and supported platforms. Validate positive and negative regression scenarios and update workflow, hook and documentation entry points before removing an old script. An issue or documentation PR is *not* evidence of completed migration.
+
+**Python application/product code may be approved as a narrow exception** when its owner documents the scope, purpose, tradeoffs, and why Rust is not appropriate. Associated application-specific tests may follow that exception. A build script, CI task, generator, migration runner, or one-off automation cannot be relabeled "application code" to evade the rule.
+
+Document repeatable `cargo` commands; cover meaningful failures and regressions, and use `cargo fmt --check`, `cargo clippy -- -D warnings`, `cargo test`, and appropriate end-to-end checks. Report checks as passed only when actually executed on the changed commit. Do not delete functioning scripts until an equivalent Rust path is tested.
+
+The canonical organization `.github` repository supplies **contributor guidance**; GitHub does not automatically inherit arbitrary `AGENTS.md`, policies, or workflows. Individual repositories should synchronize agent instructions and explicitly enable relevant checks to make the rule enforceable.
+
+
 1. Read the target repository's README, agent instructions, and local contribution guide.
 2. Open focused changes with tests or an explicit verification plan.
 3. Preserve public APIs, data formats, and operational behavior unless the change intentionally migrates them.
