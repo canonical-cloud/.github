@@ -1,0 +1,265 @@
+{
+  "version": 1,
+  "organization": "canonical-cloud",
+  "inventory_visibility": "public-only",
+  "governance": {
+    "approval_required": true,
+    "unverified_fields_grant_no_access": true,
+    "separate_admin_deployments": true,
+    "public_registry_excludes_private_repositories": true
+  },
+  "repositories": [
+    {
+      "repository": "canonical-cloud/.github",
+      "category": "governance",
+      "trust_domain": "shared-library",
+      "source_authority": "canonical",
+      "release_unit": {
+        "kind": "none",
+        "identifiers": [],
+        "status": "unverified"
+      },
+      "deployment_targets": {
+        "environments": [],
+        "vpcs": [],
+        "cloud_identities": [],
+        "status": "unverified"
+      },
+      "database_scope": "none",
+      "lifecycle": "unverified",
+      "review_status": "inferred-needs-review",
+      "visibility": "public"
+    },
+    {
+      "repository": "canonical-cloud/canonical-api-server.rs",
+      "category": "app",
+      "trust_domain": "public-app",
+      "source_authority": "unverified",
+      "release_unit": {
+        "kind": "service",
+        "identifiers": [],
+        "status": "unverified"
+      },
+      "deployment_targets": {
+        "environments": [],
+        "vpcs": [],
+        "cloud_identities": [],
+        "status": "unverified"
+      },
+      "database_scope": "unverified",
+      "lifecycle": "unverified",
+      "review_status": "inferred-needs-review",
+      "visibility": "public"
+    },
+    {
+      "repository": "canonical-cloud/canonical-cloud.github.io",
+      "category": "documentation",
+      "trust_domain": "unverified",
+      "source_authority": "unverified",
+      "release_unit": {
+        "kind": "site",
+        "identifiers": [],
+        "status": "unverified"
+      },
+      "deployment_targets": {
+        "environments": [],
+        "vpcs": [],
+        "cloud_identities": [],
+        "status": "unverified"
+      },
+      "database_scope": "none",
+      "lifecycle": "unverified",
+      "review_status": "inferred-needs-review",
+      "visibility": "public"
+    },
+    {
+      "repository": "canonical-cloud/canonical-company-auditor.rs",
+      "category": "source",
+      "trust_domain": "unverified",
+      "source_authority": "unverified",
+      "release_unit": {
+        "kind": "unverified",
+        "identifiers": [],
+        "status": "unverified"
+      },
+      "deployment_targets": {
+        "environments": [],
+        "vpcs": [],
+        "cloud_identities": [],
+        "status": "unverified"
+      },
+      "database_scope": "unverified",
+      "lifecycle": "unverified",
+      "review_status": "inferred-needs-review",
+      "visibility": "public"
+    },
+    {
+      "repository": "canonical-cloud/canonical-interfaces",
+      "category": "contracts",
+      "trust_domain": "shared-library",
+      "source_authority": "unverified",
+      "release_unit": {
+        "kind": "library",
+        "identifiers": [],
+        "status": "unverified"
+      },
+      "deployment_targets": {
+        "environments": [],
+        "vpcs": [],
+        "cloud_identities": [],
+        "status": "unverified"
+      },
+      "database_scope": "none",
+      "lifecycle": "unverified",
+      "review_status": "inferred-needs-review",
+      "visibility": "public"
+    },
+    {
+      "repository": "canonical-cloud/canonical-lib",
+      "category": "source",
+      "trust_domain": "unverified",
+      "source_authority": "unverified",
+      "release_unit": {
+        "kind": "unverified",
+        "identifiers": [],
+        "status": "unverified"
+      },
+      "deployment_targets": {
+        "environments": [],
+        "vpcs": [],
+        "cloud_identities": [],
+        "status": "unverified"
+      },
+      "database_scope": "unverified",
+      "lifecycle": "unverified",
+      "review_status": "inferred-needs-review",
+      "visibility": "public"
+    },
+    {
+      "repository": "canonical-cloud/canonical-marketing-site.web",
+      "category": "documentation",
+      "trust_domain": "unverified",
+      "source_authority": "unverified",
+      "release_unit": {
+        "kind": "site",
+        "identifiers": [],
+        "status": "unverified"
+      },
+      "deployment_targets": {
+        "environments": [],
+        "vpcs": [],
+        "cloud_identities": [],
+        "status": "unverified"
+      },
+      "database_scope": "none",
+      "lifecycle": "unverified",
+      "review_status": "inferred-needs-review",
+      "visibility": "public"
+    },
+    {
+      "repository": "canonical-cloud/canonical-mcp-server.rs",
+      "category": "app",
+      "trust_domain": "unverified",
+      "source_authority": "unverified",
+      "release_unit": {
+        "kind": "service",
+        "identifiers": [],
+        "status": "unverified"
+      },
+      "deployment_targets": {
+        "environments": [],
+        "vpcs": [],
+        "cloud_identities": [],
+        "status": "unverified"
+      },
+      "database_scope": "unverified",
+      "lifecycle": "unverified",
+      "review_status": "inferred-needs-review",
+      "visibility": "public"
+    },
+    {
+      "repository": "canonical-cloud/canonical-monorepo",
+      "category": "integration",
+      "trust_domain": "unverified",
+      "source_authority": "pinned-integration-superproject",
+      "release_unit": {
+        "kind": "integration",
+        "identifiers": [],
+        "status": "unverified"
+      },
+      "deployment_targets": {
+        "environments": [],
+        "vpcs": [],
+        "cloud_identities": [],
+        "status": "unverified"
+      },
+      "database_scope": "unverified",
+      "lifecycle": "unverified",
+      "review_status": "inferred-needs-review",
+      "visibility": "public"
+    },
+    {
+      "repository": "canonical-cloud/canonical-pub-lib-core",
+      "category": "source",
+      "trust_domain": "shared-library",
+      "source_authority": "unverified",
+      "release_unit": {
+        "kind": "library",
+        "identifiers": [],
+        "status": "unverified"
+      },
+      "deployment_targets": {
+        "environments": [],
+        "vpcs": [],
+        "cloud_identities": [],
+        "status": "unverified"
+      },
+      "database_scope": "unverified",
+      "lifecycle": "unverified",
+      "review_status": "inferred-needs-review",
+      "visibility": "public"
+    },
+    {
+      "repository": "canonical-cloud/canonical-web-server.rs",
+      "category": "app",
+      "trust_domain": "public-app",
+      "source_authority": "unverified",
+      "release_unit": {
+        "kind": "service",
+        "identifiers": [],
+        "status": "unverified"
+      },
+      "deployment_targets": {
+        "environments": [],
+        "vpcs": [],
+        "cloud_identities": [],
+        "status": "unverified"
+      },
+      "database_scope": "unverified",
+      "lifecycle": "unverified",
+      "review_status": "inferred-needs-review",
+      "visibility": "public"
+    },
+    {
+      "repository": "canonical-cloud/canonical.cloud",
+      "category": "source",
+      "trust_domain": "unverified",
+      "source_authority": "compatibility-mirror",
+      "release_unit": {
+        "kind": "unverified",
+        "identifiers": [],
+        "status": "unverified"
+      },
+      "deployment_targets": {
+        "environments": [],
+        "vpcs": [],
+        "cloud_identities": [],
+        "status": "unverified"
+      },
+      "database_scope": "unverified",
+      "lifecycle": "superseded",
+      "review_status": "inferred-needs-review",
+      "visibility": "public"
+    }
+  ]
+}
