@@ -85,3 +85,11 @@ This organization policy overrides generic feature-branch and worktree defaults 
 - Put every authorized worktree at `<repository-root>/tmp/worktrees/<name>`; from the repository root, use `./tmp/worktrees/<name>`. Never place worktrees beside repositories or organization directories.
 - Keep `tmp`, `temp`, `tmp/worktrees`, and `temp/worktrees` ignored in the repository-root `.gitignore`. Do not commit files from those directories.
 - Relocate or remove a worktree only when the operator explicitly requests it. Before removal, preserve and publish intended changes, verify its commit is represented on the target branch, and confirm there are no tracked, untracked, ignored-sensitive, or in-use files that must survive. Remove it with `git worktree remove <path>` without `--force`; never delete a worktree directory with `rm`.
+
+## Rust-first tests, scripts, and CI helpers
+
+For new work in `canonical-cloud`, implement repository tests, contract and conformance checkers, generators, release helpers, and other non-product automation in **Rust rather than Python**. Prefer `cargo test` with explicit positive and negative cases, and `cargo xtask` or a small compiled Rust CLI for repeatable scripts. Document and pin the toolchain and dependency graph; use `cargo fmt --check`, `cargo clippy -- -D warnings`, and a test command on the exact PR head.
+
+Do **not** add new `.py` tests, inline `python - <<'PY'` workflow snippets, or extend Python maintenance scripts for new features. Existing Python automation is legacy migration work: inventory consumers, implement equivalent Rust behavior, prove compatibility and security checks, update all callers, then remove old entrypoints in a separate reviewed change. Never delete a functioning gate or treat a Rust source-only check as executed guest-runtime conformance.
+
+Python remains permissible only for expressly approved Python **product/application** code and its product-specific tests; it is not an exception for project automation. Existing cross-language test suites may continue while their migrations are tracked, but new infrastructure/test logic must be Rust. This organization instruction is guidance, not automatically inherited CI enforcement; each repository must adopt it locally and explicitly run the required Rust gates.
